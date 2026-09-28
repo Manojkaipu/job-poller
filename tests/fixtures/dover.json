@@ -1,0 +1,46 @@
+[
+ {
+  "id": "aa378aa1-79f3-4995-8667-b78a61c12b11",
+  "title": "Head of People",
+  "locations": [
+   {
+    "location_type": "REMOTE",
+    "location_option": {
+     "id": "d5219789-8be5-4e1d-84ec-a9702c509e10",
+     "display_name": "United States",
+     "location_type": "COUNTRY",
+     "city": "",
+     "state": "",
+     "country": "US"
+    },
+    "name": "United States",
+    "is_primary": true
+   }
+  ],
+  "workplace_type": "REMOTE",
+  "is_published": true,
+  "is_sample": false
+ },
+ {
+  "id": "066865ee-3ba5-4098-9420-53cd8d45cd12",
+  "title": "Marketing Leader",
+  "locations": [
+   {
+    "location_type": "REMOTE",
+    "location_option": {
+     "id": "d5219789-8be5-4e1d-84ec-a9702c509e10",
+     "display_name": "United States",
+     "location_type": "COUNTRY",
+     "city": "",
+     "state": "",
+     "country": "US"
+    },
+    "name": "United States",
+    "is_primary": true
+   }
+  ],
+  "workplace_type": "REMOTE",
+  "is_published": true,
+  "is_sample": false
+ }
+]

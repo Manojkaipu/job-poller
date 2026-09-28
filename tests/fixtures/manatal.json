@@ -1,0 +1,36 @@
+[
+ {
+  "id": 1333846,
+  "hash": "L8597V4V",
+  "organization_name": "Customer Success",
+  "position_name": "Business Development Internship (12PM - 9PM)",
+  "description": "<p><a href=\"https://www.manatal.com/\">Manatal</a> is an HRTech software service (B2B SaaS) company headquartered in Bangkok, Thailand. It is one of the fastest-...",
+  "country": "Thailand",
+  "state": "Bangkok",
+  "city": "Bangkok",
+  "address": "16th Floor, 26/58 Orakarn Building, Khwaeng Lumphini, Khet Pathum Wan, Krung Thep Maha Nakhon 10330",
+  "zipcode": "",
+  "location_display": "Bangkok, Bangkok, Thailand",
+  "is_salary_visible": false,
+  "is_remote": null,
+  "contract_details": "full_time",
+  "is_pinned_in_career_page": false
+ },
+ {
+  "id": 3268737,
+  "hash": "V666XX7R",
+  "organization_name": "Customer Success",
+  "position_name": "Business Development Internship (Outbound)",
+  "description": "<p><strong>Manatal</strong> is an AI based recruitment software company based in Bangkok, Thailand. Our mission is to offer easy-to-use software to empower smal...",
+  "country": "Thailand",
+  "state": "Bangkok",
+  "city": "Bangkok",
+  "address": "",
+  "zipcode": "",
+  "location_display": "Bangkok, Bangkok, Thailand",
+  "is_salary_visible": false,
+  "is_remote": null,
+  "contract_details": "full_time",
+  "is_pinned_in_career_page": false
+ }
+]

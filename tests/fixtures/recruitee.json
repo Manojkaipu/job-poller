@@ -1,0 +1,348 @@
+[
+ {
+  "country": "Netherlands",
+  "options_salutation": "off",
+  "position": 1619,
+  "options_cover_letter": "off",
+  "careers_url": "https://careers.bunq.com/o/senior-legal-counsel-3",
+  "published_at": "2026-09-25 15:46:07 UTC",
+  "options_title": "off",
+  "education_code": "professional",
+  "locations": [
+   {
+    "id": 39979,
+    "name": "Amsterdam",
+    "state": "Noord-Holland",
+    "country": "Netherlands",
+    "city": "Amsterdam",
+    "translations": {
+     "en": {
+      "name": "Amsterdam",
+      "city": "Amsterdam",
+      "postal_code": null,
+      "street": null,
+      "note": null
+     }
+    },
+    "country_code": "NL",
+    "state_code": "NH",
+    "postal_code": null,
+    "street": null,
+    "note": null
+   }
+  ],
+  "min_hours": 40,
+  "country_code": "NL",
+  "requirements": "<ul><li><p>You are a qualified lawyer with a Master's degree in Law and a strong background in financial services.</p></li></ul><ul><li><p>You've reviewed and n...",
+  "highlight": null,
+  "dynamic_fields": [],
+  "max_hours_per_week": "40",
+  "locations_question_type": "single_choice",
+  "options_phone": "required",
+  "updated_at": "2026-09-25 15:46:07 UTC",
+  "created_at": "2026-09-25 15:38:25 UTC",
+  "cover_image": null,
+  "postal_code": null,
+  "title": "(Senior) Legal Counsel",
+  "sharing_description": "At bunq , we move fast, launching products, entering new markets, and onboarding partners across the globe. Behind every partnership that makes users\u2019 banking e...",
+  "location": "Amsterdam, Noord-Holland, Netherlands",
+  "locations_question": "What is your preferred work location?",
+  "locations_question_required": true,
+  "close_at": null,
+  "sharing_image": null,
+  "state_code": "NH",
+  "company_name": "bunq",
+  "city": "Amsterdam",
+  "slug": "senior-legal-counsel-3",
+  "translations": {
+   "en": {
+    "description": "<p class=\"font-claude-response-body break-words whitespace-normal\">At bunq , we move fast, launching products, entering new markets, and onboarding partners acr...",
+    "title": "(Senior) Legal Counsel",
+    "highlight": null,
+    "requirements": "<ul><li><p>You are a qualified lawyer with a Master's degree in Law and a strong background in financial services.</p></li></ul><ul><li><p>You've reviewed and n...",
+    "sharing_image": null,
+    "sharing_title": "(Senior) Legal Counsel",
+    "sharing_description": "At bunq , we move fast, launching products, entering new markets, and onboarding partners across the globe. Behind every partnership that makes users\u2019 banking e...",
+    "locations_question": "What is your preferred work location?"
+   }
+  },
+  "on_site": false,
+  "mailbox_email": "job.1ak1m@bunq.recruitee.com",
+  "description": "<p class=\"font-claude-response-body break-words whitespace-normal\">At bunq , we move fast, launching products, entering new markets, and onboarding partners acr...",
+  "options_photo": "off",
+  "careers_apply_url": "https://careers.bunq.com/o/senior-legal-counsel-3/c/new",
+  "experience_code": "experienced",
+  "remote": false,
+  "options_cv": "off",
+  "salary": {
+   "max": null,
+   "min": null,
+   "period": null,
+   "currency": null
+  },
+  "employment_type_code": "fulltime_permanent",
+  "guid": "1ak1m",
+  "id": 2760348,
+  "open_questions": [
+   {
+    "id": 4396462,
+    "position": 1,
+    "options": {},
+    "required": true,
+    "body": "What country do you currently live in?",
+    "kind": "string",
+    "translations": {
+     "en": {
+      "body": "What country do you currently live in?"
+     }
+    },
+    "open_question_options": []
+   },
+   {
+    "id": 4396463,
+    "position": 2,
+    "options": {},
+    "required": false,
+    "body": "<p>\ud83d\udca1 Each country has different rules for eligibility to work without requiring sponsorship.</p>\n<p><br />\ud83c\uddf3\ud83c\uddf1 <strong>Netherlands</strong>: You must be a Dutch/E...",
+    "kind": "infobox",
+    "translations": {
+     "en": {
+      "body": "<p>\ud83d\udca1 Each country has different rules for eligibility to work without requiring sponsorship.</p>\n<p><br />\ud83c\uddf3\ud83c\uddf1 <strong>Netherlands</strong>: You must be a Dutch/E..."
+     }
+    },
+    "open_question_options": []
+   },
+   {
+    "id": 4396464,
+    "position": 3,
+    "options": {},
+    "required": true,
+    "body": "Which visa situation fits you best?",
+    "kind": "single_choice",
+    "translations": {
+     "en": {
+      "body": "Which visa situation fits you best?"
+     }
+    },
+    "open_question_options": [
+     {
+      "id": 6769424,
+      "position": 0,
+      "body": "NL: I am a EU/EEA/Swiss citizen",
+      "translations": {
+       "en": {
+        "body": "NL: I am a EU/EEA/Swiss citizen"
+       }
+      }
+     },
+     {
+      "id": 6769425,
+      "position": 1,
+      "body": "NL: I am on a spousal visa / search year visa / under the reduced salary criterion",
+      "translations": {
+       "en": {
+        "body": "NL: I am on a spousal visa / search year visa / under the reduced salary criterion"
+       }
+      }
+     },
+     {
+      "id": 6769426,
+      "position": 2,
+      "body": "NL: I require visa sponsorship and I am under 29 years of age",
+      "translations": {
+       "en": {
+        "body": "NL: I require visa sponsorship and I am under 29 years of age"
+       }
+      }
+     }
+    ]
+   }
+  ],
+  "department": null,
+  "state_name": "Noord-Holland",
+  "location_question_visible": false,
+  "category_code": "banking",
+  "sharing_title": "(Senior) Legal Counsel",
+  "hybrid": true,
+  "status": "published",
+  "min_hours_per_week": "40",
+  "tags": [
+   "E4",
+   "Enablers"
+  ],
+  "max_hours": 40
+ },
+ {
+  "country": "Netherlands",
+  "options_salutation": "off",
+  "position": 1617,
+  "options_cover_letter": "off",
+  "careers_url": "https://careers.bunq.com/o/deputy-head-of-legal-1",
+  "published_at": "2026-09-25 14:42:17 UTC",
+  "options_title": "off",
+  "education_code": "professional",
+  "locations": [
+   {
+    "id": 39979,
+    "name": "Amsterdam",
+    "state": "Noord-Holland",
+    "country": "Netherlands",
+    "city": "Amsterdam",
+    "translations": {
+     "en": {
+      "name": "Amsterdam",
+      "city": "Amsterdam",
+      "postal_code": null,
+      "street": null,
+      "note": null
+     }
+    },
+    "country_code": "NL",
+    "state_code": "NH",
+    "postal_code": null,
+    "street": null,
+    "note": null
+   }
+  ],
+  "min_hours": 40,
+  "country_code": "NL",
+  "requirements": "<ul><li><p class=\"framer-text framer-styles-preset-1y9aax5\">You are a qualified lawyer with a Master's degree in Law and a strong background in financial servic...",
+  "highlight": null,
+  "dynamic_fields": [],
+  "max_hours_per_week": "40",
+  "locations_question_type": "single_choice",
+  "options_phone": "required",
+  "updated_at": "2026-09-25 14:45:18 UTC",
+  "created_at": "2026-09-25 14:26:54 UTC",
+  "cover_image": null,
+  "postal_code": null,
+  "title": "Deputy Head of Legal",
+  "sharing_description": "At bunq , users trust us with their money across 30+ countries, and that trust is only worth something if the legal framework behind it is airtight, proactive, ...",
+  "location": "Amsterdam, Noord-Holland, Netherlands",
+  "locations_question": "What is your preferred work location?",
+  "locations_question_required": true,
+  "close_at": null,
+  "sharing_image": null,
+  "state_code": "NH",
+  "company_name": "bunq",
+  "city": "Amsterdam",
+  "slug": "deputy-head-of-legal-1",
+  "translations": {
+   "en": {
+    "description": "<p>At bunq , users trust us with their money across 30+ countries, and that trust is only worth something if the legal framework behind it is airtight, proactiv...",
+    "title": "Deputy Head of Legal",
+    "highlight": null,
+    "requirements": "<ul><li><p class=\"framer-text framer-styles-preset-1y9aax5\">You are a qualified lawyer with a Master's degree in Law and a strong background in financial servic...",
+    "sharing_image": null,
+    "sharing_title": "Deputy Head of Legal",
+    "sharing_description": "At bunq , users trust us with their money across 30+ countries, and that trust is only worth something if the legal framework behind it is airtight, proactive, ...",
+    "locations_question": "What is your preferred work location?"
+   }
+  },
+  "on_site": false,
+  "mailbox_email": "job.veh8b@bunq.recruitee.com",
+  "description": "<p>At bunq , users trust us with their money across 30+ countries, and that trust is only worth something if the legal framework behind it is airtight, proactiv...",
+  "options_photo": "off",
+  "careers_apply_url": "https://careers.bunq.com/o/deputy-head-of-legal-1/c/new",
+  "experience_code": "experienced",
+  "remote": false,
+  "options_cv": "off",
+  "salary": {
+   "max": null,
+   "min": null,
+   "period": null,
+   "currency": null
+  },
+  "employment_type_code": "fulltime_permanent",
+  "guid": "veh8b",
+  "id": 2760249,
+  "open_questions": [
+   {
+    "id": 4396236,
+    "position": 1,
+    "options": {},
+    "required": true,
+    "body": "What country do you currently live in?",
+    "kind": "string",
+    "translations": {
+     "en": {
+      "body": "What country do you currently live in?"
+     }
+    },
+    "open_question_options": []
+   },
+   {
+    "id": 4396237,
+    "position": 2,
+    "options": {},
+    "required": false,
+    "body": "<p>\ud83d\udca1 Each country has different rules for eligibility to work without requiring sponsorship.</p>\n<p><br />\ud83c\uddf3\ud83c\uddf1 <strong>Netherlands</strong>: You must be a Dutch/E...",
+    "kind": "infobox",
+    "translations": {
+     "en": {
+      "body": "<p>\ud83d\udca1 Each country has different rules for eligibility to work without requiring sponsorship.</p>\n<p><br />\ud83c\uddf3\ud83c\uddf1 <strong>Netherlands</strong>: You must be a Dutch/E..."
+     }
+    },
+    "open_question_options": []
+   },
+   {
+    "id": 4396238,
+    "position": 3,
+    "options": {},
+    "required": true,
+    "body": "Which visa situation fits you best?",
+    "kind": "single_choice",
+    "translations": {
+     "en": {
+      "body": "Which visa situation fits you best?"
+     }
+    },
+    "open_question_options": [
+     {
+      "id": 6768984,
+      "position": 0,
+      "body": "NL: I am a EU/EEA/Swiss citizen",
+      "translations": {
+       "en": {
+        "body": "NL: I am a EU/EEA/Swiss citizen"
+       }
+      }
+     },
+     {
+      "id": 6768985,
+      "position": 1,
+      "body": "NL: I am on a spousal visa / search year visa / under the reduced salary criterion",
+      "translations": {
+       "en": {
+        "body": "NL: I am on a spousal visa / search year visa / under the reduced salary criterion"
+       }
+      }
+     },
+     {
+      "id": 6768986,
+      "position": 2,
+      "body": "NL: I require visa sponsorship and I am under 29 years of age",
+      "translations": {
+       "en": {
+        "body": "NL: I require visa sponsorship and I am under 29 years of age"
+       }
+      }
+     }
+    ]
+   }
+  ],
+  "department": null,
+  "state_name": "Noord-Holland",
+  "location_question_visible": false,
+  "category_code": "banking",
+  "sharing_title": "Deputy Head of Legal",
+  "hybrid": true,
+  "status": "published",
+  "min_hours_per_week": "40",
+  "tags": [
+   "E4",
+   "E5"
+  ],
+  "max_hours": 40
+ }
+]

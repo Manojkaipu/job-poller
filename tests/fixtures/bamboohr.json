@@ -1,0 +1,42 @@
+[
+ {
+  "id": "177",
+  "jobOpeningName": "Product Associate/Manager",
+  "departmentId": "18487",
+  "departmentLabel": "PRO001 - Product",
+  "employmentStatusLabel": "Full-Time",
+  "employmentType": null,
+  "location": {
+   "city": "Scottsdale",
+   "state": "Arizona"
+  },
+  "atsLocation": {
+   "country": null,
+   "state": null,
+   "province": null,
+   "city": null
+  },
+  "isRemote": null,
+  "locationType": "2"
+ },
+ {
+  "id": "178",
+  "jobOpeningName": "Applied Data Scientist",
+  "departmentId": "18456",
+  "departmentLabel": "DEV001 - Development",
+  "employmentStatusLabel": "Full-Time",
+  "employmentType": null,
+  "location": {
+   "city": null,
+   "state": null
+  },
+  "atsLocation": {
+   "country": "United States",
+   "state": "Arizona",
+   "province": null,
+   "city": "Scottsdale"
+  },
+  "isRemote": null,
+  "locationType": "1"
+ }
+]

@@ -1,0 +1,146 @@
+[
+ {
+  "id": "744000152242959",
+  "name": "Staff Software Engineer, Platform Cryptography\u00a0",
+  "uuid": "f518ce36-931d-43fa-a17d-a7d1ae757a8f",
+  "jobAdId": "a29fe97d-942b-4000-9e9d-edbca0d65940",
+  "defaultJobAd": true,
+  "refNumber": "JB0075552",
+  "company": {
+   "identifier": "ServiceNow",
+   "name": "ServiceNow"
+  },
+  "releasedDate": "2026-09-28T17:49:51.367Z",
+  "location": {
+   "city": "Santa Clara",
+   "region": "CALIFORNIA",
+   "country": "us",
+   "address": "Building A,B,C 2225 Lawson Lane",
+   "postalCode": "95054",
+   "remote": false,
+   "hybrid": true,
+   "hybridDescription": "2 days in office",
+   "fullLocation": "Santa Clara, CALIFORNIA, United States"
+  },
+  "industry": {
+   "id": "it_and_services",
+   "label": "Information Technology And Services"
+  },
+  "department": {
+   "id": "2294038",
+   "label": "Engineering, Infrastructure and Operations"
+  },
+  "function": {
+   "id": "engineering",
+   "label": "Engineering"
+  },
+  "typeOfEmployment": {
+   "id": "permanent",
+   "label": "Full-time"
+  },
+  "experienceLevel": {
+   "id": "not_applicable",
+   "label": "Not Applicable"
+  },
+  "customField": [
+   {
+    "fieldId": "60345fa28b4ba8595bef1863",
+    "fieldLabel": "Recruiting Team",
+    "valueId": "professional",
+    "valueLabel": "Professional"
+   },
+   {
+    "fieldId": "60345d5c5165a31b17288279",
+    "fieldLabel": "Region",
+    "valueId": "722a833b93e4437798309f43c0d25990",
+    "valueLabel": "AMS - North America and Canada"
+   },
+   {
+    "fieldId": "6034601b43915a29a4b3389b",
+    "fieldLabel": "Job Location",
+    "valueId": "L_SJC005",
+    "valueLabel": "2225 Lawson Lane, Santa Clara, California, 95054, United States of America(L_SJC005)"
+   }
+  ],
+  "visibility": "PUBLIC",
+  "ref": "https://api.smartrecruiters.com/v1/companies/ServiceNow/postings/744000152242959",
+  "language": {
+   "code": "en",
+   "label": "English",
+   "labelNative": "English (US)"
+  }
+ },
+ {
+  "id": "744000152234869",
+  "name": "Principal Inbound Product Manager",
+  "uuid": "4b152455-541c-46d0-86d8-442993cf3f74",
+  "jobAdId": "82446690-0c35-451e-a7bb-4ce7c032b4a2",
+  "defaultJobAd": true,
+  "refNumber": "JB0075666",
+  "company": {
+   "identifier": "ServiceNow",
+   "name": "ServiceNow"
+  },
+  "releasedDate": "2026-09-28T17:04:56.159Z",
+  "location": {
+   "city": "San Diego",
+   "region": "California",
+   "country": "us",
+   "address": "4810 Eastgate Mall",
+   "postalCode": "92121",
+   "remote": false,
+   "hybrid": true,
+   "fullLocation": "San Diego, California, United States"
+  },
+  "industry": {
+   "id": "it_and_services",
+   "label": "Information Technology And Services"
+  },
+  "department": {
+   "id": "3205510",
+   "label": "Digital Technology"
+  },
+  "function": {
+   "id": "product_management",
+   "label": "Product Management"
+  },
+  "typeOfEmployment": {
+   "id": "permanent",
+   "label": "Full-time"
+  },
+  "experienceLevel": {
+   "id": "not_applicable",
+   "label": "Not Applicable"
+  },
+  "customField": [
+   {
+    "fieldId": "60345fa28b4ba8595bef1863",
+    "fieldLabel": "Recruiting Team",
+    "valueId": "professional",
+    "valueLabel": "Professional"
+   },
+   {
+    "fieldId": "60345d5c5165a31b17288279",
+    "fieldLabel": "Region",
+    "valueId": "722a833b93e4437798309f43c0d25990",
+    "valueLabel": "AMS - North America and Canada"
+   },
+   {
+    "fieldId": "6034601b43915a29a4b3389b",
+    "fieldLabel": "Job Location",
+    "valueId": "L_SAN003",
+    "valueLabel": "4810 Eastgate Mall, San Diego, California, 92121, United States of America(L_SAN003)"
+   }
+  ],
+  "visibility": "PUBLIC",
+  "ref": "https://api.smartrecruiters.com/v1/companies/ServiceNow/postings/744000152234869",
+  "creator": {
+   "name": "Stacy Young"
+  },
+  "language": {
+   "code": "en",
+   "label": "English",
+   "labelNative": "English (US)"
+  }
+ }
+]

@@ -1,0 +1,53 @@
+name: Poll job boards
+
+on:
+  schedule:
+    - cron: "17 */4 * * *"  # every 4 hours, off the top of the hour
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["jobpoller/**", "tests/**", "pyproject.toml"]
+
+concurrency: poll  # never two runs racing on the same state
+
+jobs:
+  test:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pytest && python -m pytest -q
+
+  poll:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      # The seen-postings state lives in the Actions cache rather than in git, so the repo doesn't
+      # grow a commit every 4 hours. If the cache is ever evicted, the next run re-baselines quietly.
+      - uses: actions/cache/restore@v4
+        with:
+          path: state
+          key: seen-${{ github.run_id }}
+          restore-keys: seen-
+
+      - name: Poll
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: python -m jobpoller run
+
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: state
+          key: seen-${{ github.run_id }}

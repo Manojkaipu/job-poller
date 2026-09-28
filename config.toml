@@ -1,0 +1,28 @@
+# Job poller settings. Companies live in companies.toml.
+
+[settings]
+companies_file = "companies.toml"
+state_file = "state/seen.json"
+workers = 8                 # boards fetched in parallel
+alert_after_failures = 3    # email about a board after this many failed runs in a row
+
+[filters]
+# A title must contain one of these (whole words, any case; spaces also match "-" and "/").
+include = [
+  "machine learning", "ml", "deep learning", "ai engineer", "applied ai", "applied scientist",
+  "research engineer", "research scientist", "member of technical staff", "llm", "nlp", "computer vision", "mlops",
+  "inference", "search", "ranking", "recommendation", "retrieval",
+  "data scientist", "data engineer", "analytics engineer",
+  "software engineer", "software developer", "backend", "back end", "platform engineer",
+  "infrastructure engineer", "new grad", "early career",
+]
+# ...and none of these. "staff" alone would also drop "Member of Technical Staff", hence the pairs.
+exclude = [
+  "senior", "sr", "staff engineer", "staff software", "staff machine learning", "staff ml",
+  "staff data", "staff research", "staff applied", "staff ai", "principal", "lead", "manager",
+  "director", "head", "vp", "vice president", "architect", "distinguished", "fellow",
+  "intern", "internship", "co op", "sales", "account executive", "recruiter",
+]
+us_only = true                 # keep US and unspecified-remote postings
+extra_locations = []           # also keep these places, e.g. ["Toronto"]
+allow_unknown_location = true  # keep postings that give no location at all

@@ -1,0 +1,88 @@
+[
+ {
+  "id": "559663",
+  "benefits": "<div><!--block-->We want Pinpoint to be the best place you've ever worked, somewhere you feel valued, supported and excited to grow. Here's what you get:</div><...",
+  "benefits_header": "What we offer",
+  "compensation": null,
+  "compensation_minimum": null,
+  "compensation_maximum": null,
+  "compensation_currency": null,
+  "compensation_frequency": null,
+  "compensation_visible": false,
+  "deadline_at": null,
+  "description": "<div><!--block-->Hi \ud83d\udc4b I'm Ellis, COO at Pinpoint.<br><br>We're a high growth HR tech company building software that helps in house recruitment teams attract, hi...",
+  "employment_type": "full_time",
+  "employment_type_text": "Full Time",
+  "key_responsibilities": "<div><!--block--><strong>Sales legal (35%)</strong></div><ul><li><!--block-->Own commercial contracting end to end: our MSA, DPA and customer red lines. You're ...",
+  "key_responsibilities_header": "What you'll do",
+  "reporting_to": "Chief Operating Officer",
+  "skills_knowledge_expertise": "<ul><li><!--block-->4+ years as a qualified lawyer, or as a contracts manager, legal ops lead or commercial manager with real negotiation authority</li><li><!--...",
+  "skills_knowledge_expertise_header": "What you'll bring",
+  "title": "Founding Legal Counsel",
+  "url": "https://workwithus.pinpointhq.com/en/postings/ce6c9e5c-a2d3-42b0-a01e-9edeae315b04",
+  "path": "/en/postings/ce6c9e5c-a2d3-42b0-a01e-9edeae315b04",
+  "workplace_type": "remote",
+  "workplace_type_text": "Fully remote",
+  "job": {
+   "id": "562609",
+   "requisition_id": "PIN-0407",
+   "department": {
+    "id": "1788",
+    "name": "Operations"
+   },
+   "division": null,
+   "structure_custom_group_one": null
+  },
+  "location": {
+   "id": "283",
+   "city": "London",
+   "name": "Remote",
+   "postal_code": null,
+   "province": "London",
+   "street_address": null
+  }
+ },
+ {
+  "id": "567495",
+  "benefits": "<div><!--block-->We want Pinpoint to be the best place you've ever worked, somewhere you feel valued, supported and excited to grow. Here's what you get:</div><...",
+  "benefits_header": "What we offer",
+  "compensation": "\u00a370,000 - \u00a390,000 / year",
+  "compensation_minimum": 70000.0,
+  "compensation_maximum": 90000.0,
+  "compensation_currency": "GBP",
+  "compensation_frequency": "year",
+  "compensation_visible": true,
+  "deadline_at": null,
+  "description": "<div><!--block-->Hi \ud83d\udc4b I'm Anna, Head of Implementation at Pinpoint.<br><br>We're a high growth, bootstrapped HR tech company building software that helps in hou...",
+  "employment_type": "full_time",
+  "employment_type_text": "Full Time",
+  "key_responsibilities": "<ul><li><!--block-->Get every implementation live on time, with deadlines met and blockers cleared with urgency</li><li><!--block-->Own project management from ...",
+  "key_responsibilities_header": "What you'll do",
+  "reporting_to": "Head of Implementation",
+  "skills_knowledge_expertise": "<ul><li><!--block-->3+ years leading large B2B SaaS implementations end to end, across more than one product and with both enterprise and mid market customers</...",
+  "skills_knowledge_expertise_header": "What you'll bring",
+  "title": "Enterprise Implementation Manager",
+  "url": "https://workwithus.pinpointhq.com/en/postings/8fa6a0e0-0beb-4233-8ab0-409fe6bfccb1",
+  "path": "/en/postings/8fa6a0e0-0beb-4233-8ab0-409fe6bfccb1",
+  "workplace_type": "remote",
+  "workplace_type_text": "Fully remote",
+  "job": {
+   "id": "570035",
+   "requisition_id": "PIN-0408",
+   "department": {
+    "id": "75883",
+    "name": "Implementation"
+   },
+   "division": null,
+   "structure_custom_group_one": null
+  },
+  "location": {
+   "id": "5495",
+   "city": "London",
+   "name": "United Kingdom",
+   "postal_code": "",
+   "province": "London",
+   "street_address": ""
+  }
+ }
+]

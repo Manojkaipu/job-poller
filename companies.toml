@@ -1,0 +1,751 @@
+# Boards to poll. Find a new company's board with: python -m jobpoller discover "Name"
+# Each one below was checked against its live board on 2026-09-28.
+
+# --- AI and ML startups -------------------------------------------------------
+
+[[company]]
+name = "Anthropic"
+ats = "greenhouse"
+slug = "anthropic"
+
+[[company]]
+name = "OpenAI"
+ats = "ashby"
+slug = "openai"
+
+[[company]]
+name = "Cohere"
+ats = "ashby"
+slug = "cohere"
+
+[[company]]
+name = "Perplexity"
+ats = "ashby"
+slug = "perplexity"
+
+[[company]]
+name = "xAI"
+ats = "greenhouse"
+slug = "xai"
+
+[[company]]
+name = "Character.AI"
+ats = "ashby"
+slug = "character"
+
+[[company]]
+name = "ElevenLabs"
+ats = "ashby"
+slug = "elevenlabs"
+
+[[company]]
+name = "Stability AI"
+ats = "greenhouse"
+slug = "stabilityai"
+
+[[company]]
+name = "Hugging Face"
+ats = "workable"
+slug = "huggingface"
+
+[[company]]
+name = "Together AI"
+ats = "greenhouse"
+slug = "togetherai"
+
+[[company]]
+name = "Fireworks AI"
+ats = "ashby"
+slug = "fireworks"
+
+[[company]]
+name = "Baseten"
+ats = "ashby"
+slug = "baseten"
+
+[[company]]
+name = "Modal"
+ats = "ashby"
+slug = "modal"
+
+[[company]]
+name = "Anyscale"
+ats = "ashby"
+slug = "anyscale"
+
+[[company]]
+name = "Lambda"
+ats = "ashby"
+slug = "lambda"
+
+[[company]]
+name = "CoreWeave"
+ats = "greenhouse"
+slug = "coreweave"
+
+[[company]]
+name = "SambaNova Systems"
+ats = "greenhouse"
+slug = "sambanovasystems"
+
+[[company]]
+name = "Etched"
+ats = "ashby"
+slug = "etched"
+
+[[company]]
+name = "Scale AI"
+ats = "greenhouse"
+slug = "scaleai"
+
+[[company]]
+name = "Snorkel AI"
+ats = "greenhouse"
+slug = "snorkelai"
+
+[[company]]
+name = "Labelbox"
+ats = "greenhouse"
+slug = "labelbox"
+
+[[company]]
+name = "Pinecone"
+ats = "ashby"
+slug = "pinecone"
+
+[[company]]
+name = "Weaviate"
+ats = "ashby"
+slug = "weaviate"
+
+[[company]]
+name = "Qdrant"
+ats = "manatal"
+slug = "qdrant"
+
+[[company]]
+name = "Chroma"
+ats = "ashby"
+slug = "trychroma"
+
+[[company]]
+name = "Zilliz"
+ats = "lever"
+slug = "zilliz"
+
+[[company]]
+name = "LanceDB"
+ats = "ashby"
+slug = "lancedb"
+
+[[company]]
+name = "LangChain"
+ats = "ashby"
+slug = "langchain"
+
+[[company]]
+name = "LlamaIndex"
+ats = "ashby"
+slug = "llamaindex"
+
+[[company]]
+name = "Cursor (Anysphere)"
+ats = "ashby"
+slug = "cursor"
+
+[[company]]
+name = "Cognition"
+ats = "ashby"
+slug = "cognition"
+
+[[company]]
+name = "Replit"
+ats = "ashby"
+slug = "replit"
+
+[[company]]
+name = "Harvey"
+ats = "ashby"
+slug = "harvey"
+
+[[company]]
+name = "Glean"
+ats = "greenhouse"
+slug = "gleanwork"
+
+[[company]]
+name = "Sierra"
+ats = "ashby"
+slug = "sierra"
+
+[[company]]
+name = "Decagon"
+ats = "ashby"
+slug = "decagon"
+
+[[company]]
+name = "Writer"
+ats = "ashby"
+slug = "writer"
+
+[[company]]
+name = "Abridge"
+ats = "ashby"
+slug = "abridge"
+
+[[company]]
+name = "Physical Intelligence"
+ats = "ashby"
+slug = "physicalintelligence"
+
+[[company]]
+name = "Figure AI"
+ats = "greenhouse"
+slug = "figureai"
+
+[[company]]
+name = "Mercor"
+ats = "ashby"
+slug = "mercor"
+
+[[company]]
+name = "Poolside"
+ats = "ashby"
+slug = "poolside"
+
+[[company]]
+name = "Luma AI"
+ats = "ashby"
+slug = "lumaai"
+
+[[company]]
+name = "Suno"
+ats = "ashby"
+slug = "suno"
+
+[[company]]
+name = "Pika"
+ats = "ashby"
+slug = "pika"
+
+[[company]]
+name = "Tavus"
+ats = "ashby"
+slug = "tavus"
+
+[[company]]
+name = "Unstructured"
+ats = "ashby"
+slug = "unstructured"
+
+[[company]]
+name = "Vectara"
+ats = "greenhouse"
+slug = "vectara"
+
+[[company]]
+name = "Arize AI"
+ats = "greenhouse"
+slug = "arizeai"
+
+# --- Autonomy, robotics and defense -------------------------------------------
+
+[[company]]
+name = "Nuro"
+ats = "greenhouse"
+slug = "nuro"
+
+[[company]]
+name = "Waymo"
+ats = "greenhouse"
+slug = "waymo"
+
+[[company]]
+name = "Zoox"
+ats = "lever"
+slug = "zoox"
+
+[[company]]
+name = "Anduril"
+ats = "greenhouse"
+slug = "andurilindustries"
+
+[[company]]
+name = "Shield AI"
+ats = "lever"
+slug = "shieldai"
+
+[[company]]
+name = "Saronic"
+ats = "ashby"
+slug = "saronic"
+
+[[company]]
+name = "Palantir"
+ats = "lever"
+slug = "palantir"
+
+[[company]]
+name = "Skydio"
+ats = "ashby"
+slug = "skydio"
+
+# --- Data, infrastructure and developer tools ---------------------------------
+
+[[company]]
+name = "Databricks"
+ats = "greenhouse"
+slug = "databricks"
+
+[[company]]
+name = "Snowflake"
+ats = "ashby"
+slug = "snowflake"
+
+[[company]]
+name = "Confluent"
+ats = "ashby"
+slug = "confluent"
+
+[[company]]
+name = "Fivetran"
+ats = "greenhouse"
+slug = "fivetran"
+
+[[company]]
+name = "Airbyte"
+ats = "ashby"
+slug = "airbyte"
+
+[[company]]
+name = "Hex"
+ats = "greenhouse"
+slug = "hextechnologies"
+
+[[company]]
+name = "ClickHouse"
+ats = "ashby"
+slug = "clickhouse"
+
+[[company]]
+name = "MotherDuck"
+ats = "ashby"
+slug = "motherduck"
+
+[[company]]
+name = "Starburst"
+ats = "greenhouse"
+slug = "starburst"
+
+[[company]]
+name = "Temporal"
+ats = "ashby"
+slug = "temporal"
+
+[[company]]
+name = "Supabase"
+ats = "ashby"
+slug = "supabase"
+
+[[company]]
+name = "Vercel"
+ats = "greenhouse"
+slug = "vercel"
+
+[[company]]
+name = "Netlify"
+ats = "greenhouse"
+slug = "netlify"
+
+[[company]]
+name = "PlanetScale"
+ats = "greenhouse"
+slug = "planetscale"
+
+[[company]]
+name = "Cockroach Labs"
+ats = "greenhouse"
+slug = "cockroachlabs"
+
+[[company]]
+name = "MongoDB"
+ats = "greenhouse"
+slug = "mongodb"
+
+[[company]]
+name = "Elastic"
+ats = "greenhouse"
+slug = "elastic"
+
+[[company]]
+name = "Grafana Labs"
+ats = "greenhouse"
+slug = "grafanalabs"
+
+[[company]]
+name = "Datadog"
+ats = "greenhouse"
+slug = "datadog"
+
+[[company]]
+name = "Sentry"
+ats = "ashby"
+slug = "sentry"
+
+[[company]]
+name = "PostHog"
+ats = "ashby"
+slug = "posthog"
+
+[[company]]
+name = "Retool"
+ats = "gem"
+slug = "retool"
+
+[[company]]
+name = "Airtable"
+ats = "greenhouse"
+slug = "airtable"
+
+[[company]]
+name = "Notion"
+ats = "ashby"
+slug = "notion"
+
+[[company]]
+name = "Linear"
+ats = "ashby"
+slug = "linear"
+
+[[company]]
+name = "Figma"
+ats = "greenhouse"
+slug = "figma"
+
+[[company]]
+name = "Canva"
+ats = "smartrecruiters"
+slug = "Canva"
+
+[[company]]
+name = "Miro"
+ats = "ashby"
+slug = "miro"
+
+[[company]]
+name = "Asana"
+ats = "greenhouse"
+slug = "asana"
+
+[[company]]
+name = "GitLab"
+ats = "greenhouse"
+slug = "gitlab"
+
+[[company]]
+name = "Zapier"
+ats = "ashby"
+slug = "zapier"
+
+[[company]]
+name = "Tailscale"
+ats = "greenhouse"
+slug = "tailscale"
+
+[[company]]
+name = "1Password"
+ats = "ashby"
+slug = "1password"
+
+[[company]]
+name = "Vanta"
+ats = "ashby"
+slug = "vanta"
+
+[[company]]
+name = "Drata"
+ats = "ashby"
+slug = "drata"
+
+[[company]]
+name = "Wiz"
+ats = "greenhouse"
+slug = "wizinc"
+
+[[company]]
+name = "Cloudflare"
+ats = "greenhouse"
+slug = "cloudflare"
+
+[[company]]
+name = "Twilio"
+ats = "greenhouse"
+slug = "twilio"
+
+[[company]]
+name = "Samsara"
+ats = "greenhouse"
+slug = "samsara"
+
+[[company]]
+name = "Verkada"
+ats = "greenhouse"
+slug = "verkada"
+
+[[company]]
+name = "Clay"
+ats = "ashby"
+slug = "claylabs"
+
+[[company]]
+name = "Redis"
+ats = "ashby"
+slug = "redis"
+
+[[company]]
+name = "Algolia"
+ats = "greenhouse"
+slug = "algolia"
+
+[[company]]
+name = "Imply"
+ats = "greenhouse"
+slug = "imply"
+
+[[company]]
+name = "Render"
+ats = "ashby"
+slug = "render"
+
+[[company]]
+name = "Railway"
+ats = "ashby"
+slug = "railway"
+
+[[company]]
+name = "Fly.io"
+ats = "bamboohr"
+slug = "flyio"
+
+[[company]]
+name = "Rubrik"
+ats = "greenhouse"
+slug = "rubrik"
+
+# --- Fintech ------------------------------------------------------------------
+
+[[company]]
+name = "Plaid"
+ats = "ashby"
+slug = "plaid"
+
+[[company]]
+name = "Stripe"
+ats = "greenhouse"
+slug = "stripe"
+
+[[company]]
+name = "Ramp"
+ats = "ashby"
+slug = "ramp"
+
+[[company]]
+name = "Brex"
+ats = "greenhouse"
+slug = "brex"
+
+[[company]]
+name = "Mercury"
+ats = "greenhouse"
+slug = "mercury"
+
+[[company]]
+name = "Chime"
+ats = "greenhouse"
+slug = "chime"
+
+[[company]]
+name = "Affirm"
+ats = "greenhouse"
+slug = "affirm"
+
+[[company]]
+name = "Robinhood"
+ats = "greenhouse"
+slug = "robinhood"
+
+[[company]]
+name = "Coinbase"
+ats = "greenhouse"
+slug = "coinbase"
+
+# --- Consumer and other tech --------------------------------------------------
+
+[[company]]
+name = "Rippling"
+ats = "rippling"
+slug = "rippling"
+
+[[company]]
+name = "Gusto"
+ats = "greenhouse"
+slug = "gusto"
+
+[[company]]
+name = "Discord"
+ats = "greenhouse"
+slug = "discord"
+
+[[company]]
+name = "Reddit"
+ats = "greenhouse"
+slug = "reddit"
+
+[[company]]
+name = "Pinterest"
+ats = "greenhouse"
+slug = "pinterest"
+
+[[company]]
+name = "Duolingo"
+ats = "greenhouse"
+slug = "duolingo"
+
+[[company]]
+name = "Instacart"
+ats = "greenhouse"
+slug = "instacart"
+
+[[company]]
+name = "DoorDash"
+ats = "greenhouse"
+slug = "doordashusa"
+
+[[company]]
+name = "Lyft"
+ats = "greenhouse"
+slug = "lyft"
+
+[[company]]
+name = "Airbnb"
+ats = "greenhouse"
+slug = "airbnb"
+
+[[company]]
+name = "Dropbox"
+ats = "greenhouse"
+slug = "dropbox"
+
+[[company]]
+name = "Faire"
+ats = "greenhouse"
+slug = "faire"
+
+[[company]]
+name = "Nextdoor"
+ats = "greenhouse"
+slug = "nextdoor"
+
+[[company]]
+name = "Quora"
+ats = "ashby"
+slug = "quora"
+
+[[company]]
+name = "Webflow"
+ats = "greenhouse"
+slug = "webflow"
+
+[[company]]
+name = "Benchling"
+ats = "ashby"
+slug = "benchling"
+
+[[company]]
+name = "Flexport"
+ats = "greenhouse"
+slug = "flexport"
+
+[[company]]
+name = "Descript"
+ats = "greenhouse"
+slug = "descript"
+
+# --- Arizona ------------------------------------------------------------------
+
+[[company]]
+name = "GitKraken"
+ats = "bamboohr"
+slug = "gitkraken"
+
+[[company]]
+name = "Carvana"
+ats = "greenhouse"
+slug = "carvana"
+
+[[company]]
+name = "Axon"
+ats = "greenhouse"
+slug = "axon"
+
+[[company]]
+name = "GoDaddy"
+ats = "greenhouse"
+slug = "godaddy"
+
+[[company]]
+name = "Opendoor"
+ats = "rippling"
+slug = "opendoor"
+
+[[company]]
+name = "Lucid Motors"
+ats = "greenhouse"
+slug = "lucidmotors"
+
+# --- Large companies (Workday, SmartRecruiters) -------------------------------
+
+[[company]]
+name = "NVIDIA"
+ats = "workday"
+slug = "nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite"
+
+[[company]]
+name = "Intel"
+ats = "workday"
+slug = "intel.wd1.myworkdayjobs.com/External"
+
+[[company]]
+name = "Microchip"
+ats = "workday"
+slug = "microchiphr.wd5.myworkdayjobs.com/External"
+
+[[company]]
+name = "Adobe"
+ats = "workday"
+slug = "adobe.wd5.myworkdayjobs.com/external_experienced"
+
+[[company]]
+name = "Salesforce"
+ats = "workday"
+slug = "salesforce.wd12.myworkdayjobs.com/External_Career_Site"
+
+[[company]]
+name = "Workday"
+ats = "workday"
+slug = "workday.wd5.myworkdayjobs.com/Workday"
+
+[[company]]
+name = "Mastercard"
+ats = "workday"
+slug = "mastercard.wd1.myworkdayjobs.com/CorporateCareers"
+
+[[company]]
+name = "Capital One"
+ats = "workday"
+slug = "capitalone.wd12.myworkdayjobs.com/Capital_One"
+
+[[company]]
+name = "ServiceNow"
+ats = "smartrecruiters"
+slug = "ServiceNow"
