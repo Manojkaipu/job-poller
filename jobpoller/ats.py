@@ -7,12 +7,22 @@ from __future__ import annotations
 
 import datetime as dt
 import re
+import time
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
 from urllib.parse import quote
 
 from .http import FetchError, get_json, get_text, post_json
+
+
+class Partial(list):
+    """Postings from a board that was only read newest-first up to a page limit.
+
+    Anything older than the window is missing, so the poller only treats a posting on a
+    partial board as new if its posted date is after the board was first seen.
+    """
 
 
 @dataclass(frozen=True)
@@ -88,7 +98,7 @@ def _ms_date(ms) -> str | None:
 
 
 def ashby(slug: str, company: str) -> list[Job]:
-    data = get_json(f"https://api.ashbyhq.com/posting-api/job-board/{slug}")
+    data = get_json(f"https://api.ashbyhq.com/posting-api/job-board/{quote(slug)}")  # some have spaces
     out = []
     for j in data["jobs"]:
         if j.get("isListed") is False:
@@ -258,30 +268,137 @@ def _rfc822_date(s: str | None) -> str | None:
 
 # --- enterprise, for the few large companies worth watching --------------------------------
 
-def workday(slug: str, company: str) -> list[Job]:
+PAGE_WORKERS = 4  # concurrent page requests within one board, for boards stuck at 10-20 per page
+EIGHTFOLD_PAGES = 20  # newest 200 postings; new ones land at the top, so 4 hours never fills this
+EIGHTFOLD_DELAY = 4.0  # seconds between Eightfold pages, under its ~20 requests/minute limit
+
+
+def _paged(first: dict, total: int, page_size: int, fetch_page, workers: int = PAGE_WORKERS) -> list[dict]:
+    """The first page is already fetched; get the rest a few at a time, in order."""
+    offsets = range(page_size, total, page_size)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        return [first, *pool.map(fetch_page, offsets)]
+
+
+def workday(slug: str, company: str, search: tuple[str, ...] = ()) -> list[Job]:
     """slug is the careers-site URL, e.g. nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite.
 
-    Workday pages 20 postings per request and only reports the total on the first page.
+    Workday pages 20 postings per request, reports the total only on the first page, and caps
+    a listing at 2,000. For huge boards (Walmart) pass `search` terms: each is a separate
+    Workday search and the results are merged.
     """
     host, site = _workday_parts(slug)
     tenant = host.split(".")[0]
     api = f"https://{host}/wday/cxs/{tenant}/{site}/jobs"
-    out, offset, total = [], 0, None
-    while total is None or offset < total:
-        page = post_json(api, {"appliedFacets": {}, "limit": 20, "offset": offset, "searchText": ""})
-        if total is None:
-            total = page.get("total", 0)
-            _check_size(total, slug)
-        postings = page.get("jobPostings") or []
-        for j in postings:
-            if "externalPath" not in j:
-                continue
-            out.append(Job(company, j["externalPath"], j["title"].strip(), f"https://{host}/{site}{j['externalPath']}",
-                           location=j.get("locationsText", "")))
-        if not postings:
-            break
-        offset += len(postings)
+    out: dict[str, Job] = {}
+    for text in search or ("",):
+        page = lambda offset: post_json(api, {"appliedFacets": {}, "limit": 20, "offset": offset, "searchText": text})
+        first = page(0)
+        total = first.get("total", 0)
+        _check_size(total, slug)
+        for p in _paged(first, total, 20, page):
+            for j in p.get("jobPostings") or []:
+                if "externalPath" in j and j["externalPath"] not in out:
+                    out[j["externalPath"]] = Job(company, j["externalPath"], j["title"].strip(),
+                                                 f"https://{host}/{site}{j['externalPath']}",
+                                                 location=j.get("locationsText", ""))
+    return list(out.values())
+
+
+def ukg(slug: str, company: str) -> list[Job]:
+    """UKG Pro (UltiPro) Recruiting. slug is the job board URL without https://, e.g.
+    recruiting2.ultipro.com/WEB1004WEBIN/JobBoard/1786dc47-531b-4fc7-a333-399de6a6684c"""
+    board = "https://" + re.sub(r"^https?://", "", slug).strip("/")
+    if "/JobBoard/" not in board:
+        raise FetchError(f"ukg slug should be the .../JobBoard/<id> URL, got {slug!r}")
+    out, skip = [], 0
+    while True:
+        data = post_json(f"{board}/JobBoardView/LoadSearchResults", {
+            "opportunitySearch": {"Top": 100, "Skip": skip, "QueryString": "", "Filters": [],
+                                  "OrderBy": [{"Value": "postedDateDesc", "PropertyName": "PostedDate", "Ascending": False}]},
+            "matchCriteria": {"PreferredJobs": [], "Educations": [], "LicenseAndCertifications": [], "Skills": [],
+                              "hasNoLicenses": False, "SkippedSkills": []}})
+        _check_size(data.get("totalCount", 0), slug)
+        opps = data.get("opportunities") or []
+        for o in opps:
+            locs = []
+            for l in o.get("Locations") or []:
+                a = l.get("Address") or {}
+                locs.append(_place(a.get("City"), (a.get("State") or {}).get("Name") if isinstance(a.get("State"), dict) else a.get("State"),
+                                   (a.get("Country") or {}).get("Name")) or l.get("LocalizedDescription"))
+            out.append(Job(company, o["Id"], o["Title"].strip(), f"{board}/OpportunityDetail?opportunityId={o['Id']}",
+                           location=_join(*locs), posted=_date(o.get("PostedDate")), department=o.get("JobCategoryName")))
+        skip += len(opps)
+        if not opps or skip >= data.get("totalCount", 0):
+            return out
+
+
+def eightfold(slug: str, company: str) -> list[Job]:
+    """slug is "careers-host/email-domain", e.g. explore.jobs.netflix.net/netflix.com.
+
+    Eightfold has two public search APIs; older sites answer /api/apply/v2/jobs, newer ones
+    ("PCSX") only /api/pcsx/search. Both return 10 postings per request and rate-limit hard
+    (~20 requests a minute), so pages are read one at a time, newest first, and a big board
+    is read as a Partial window of its newest postings.
+    """
+    host, _, domain = slug.partition("/")
+    if not domain:
+        raise FetchError(f"eightfold slug should look like host/domain.com, got {slug!r}")
+
+    def paced(url):
+        def page(start):
+            if start:
+                time.sleep(EIGHTFOLD_DELAY)
+            return get_json(url.format(start=start))
+        return page
+
+    try:
+        get_page = paced(f"https://{host}/api/apply/v2/jobs?domain={domain}&start={{start}}&num=10&sort_by=new")
+        first, unwrap = get_page(0), lambda p: p
+    except FetchError as e:
+        if e.status != 403:
+            raise
+        get_page = paced(f"https://{host}/api/pcsx/search?domain={domain}&start={{start}}")  # sorted by date already
+        first, unwrap = get_page(0), lambda p: p["data"]
+    total = unwrap(first).get("count", 0)
+    _check_size(total, slug)
+    partial = total > EIGHTFOLD_PAGES * 10
+    out = Partial() if partial else []
+    for p in _paged(first, min(total, EIGHTFOLD_PAGES * 10), 10, get_page, workers=1):
+        for j in unwrap(p).get("positions") or []:
+            url = j.get("canonicalPositionUrl") or f"https://{host}{j.get('positionUrl', '')}"
+            ts = j.get("postedTs") or j.get("t_create")
+            out.append(Job(company, str(j["id"]), j["name"].strip(), url,
+                           location=_join(*(j.get("locations") or []), j.get("location")),
+                           remote=(j.get("workLocationOption") == "remote") or None,
+                           posted=_ms_date(ts * 1000) if isinstance(ts, (int, float)) else None,
+                           department=j.get("department")))
     return out
+
+
+def oracle(slug: str, company: str) -> list[Job]:
+    """Oracle Recruiting Cloud. slug is "host/siteNumber", e.g. ibqbjb.fa.ocs.oraclecloud.com/CX_1
+    (the site number is in the careers page URL or source)."""
+    host, _, site = slug.partition("/")
+    if not site:
+        raise FetchError(f"oracle slug should look like host/CX_1, got {slug!r}")
+    out, offset = [], 0
+    while True:
+        data = get_json(f"https://{host}/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true"
+                        f"&expand=requisitionList.secondaryLocations"
+                        f"&finder=findReqs;siteNumber={site},limit=200,offset={offset},sortBy=POSTING_DATES_DESC")
+        item = (data.get("items") or [{}])[0]
+        _check_size(item.get("TotalJobsCount", 0), slug)
+        reqs = item.get("requisitionList") or []
+        for r in reqs:
+            out.append(Job(company, str(r["Id"]), r["Title"].strip(),
+                           f"https://{host}/hcmUI/CandidateExperience/en/sites/{site}/job/{r['Id']}",
+                           location=_join(r.get("PrimaryLocation"), *[s.get("Name") for s in r.get("secondaryLocations") or []]),
+                           remote=(r.get("WorkplaceType") == "Remote") or None,
+                           posted=_date(r.get("PostedDate"))))
+        offset += len(reqs)
+        if not reqs or offset >= item.get("TotalJobsCount", 0):
+            return out
 
 
 def _workday_parts(slug: str) -> tuple[str, str]:
@@ -297,7 +414,8 @@ FETCHERS = {
     "greenhouse": greenhouse, "lever": lever, "ashby": ashby, "workable": workable,
     "smartrecruiters": smartrecruiters, "recruitee": recruitee, "bamboohr": bamboohr,
     "breezy": breezy, "pinpoint": pinpoint, "rippling": rippling, "gem": gem, "dover": dover,
-    "manatal": manatal, "teamtailor": teamtailor, "workday": workday,
+    "manatal": manatal, "teamtailor": teamtailor, "workday": workday, "eightfold": eightfold,
+    "oracle": oracle, "ukg": ukg,
 }
 
 # Public board URL per ATS, for the discovery helper and for humans checking a slug.
@@ -321,4 +439,11 @@ BOARD_URL = {
 
 
 def board_url(ats: str, slug: str) -> str:
+    if ats == "eightfold":
+        return f"https://{slug.partition('/')[0]}/careers"
+    if ats == "oracle":
+        host, _, site = slug.partition("/")
+        return f"https://{host}/hcmUI/CandidateExperience/en/sites/{site}"
+    if ats == "ukg":
+        return "https://" + re.sub(r"^https?://", "", slug)
     return BOARD_URL[ats].format(slug=quote(slug, safe="/.:"))

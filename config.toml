@@ -16,13 +16,15 @@ include = [
   "software engineer", "software developer", "backend", "back end", "platform engineer",
   "infrastructure engineer", "new grad", "early career",
 ]
-# ...and none of these. "staff" alone would also drop "Member of Technical Staff", hence the pairs.
+# ...and none of these.
 exclude = [
-  "senior", "sr", "staff engineer", "staff software", "staff machine learning", "staff ml",
-  "staff data", "staff research", "staff applied", "staff ai", "principal", "lead", "manager",
-  "director", "head", "vp", "vice president", "architect", "distinguished", "fellow",
+  "senior", "sr", "staff", "principal", "lead", "manager", "director", "head", "vp",
+  "vice president", "architect", "distinguished", "fellow",
   "intern", "internship", "co op", "sales", "account executive", "recruiter",
 ]
+# Ignored when checking excludes, so "staff" doesn't drop "Member of Technical Staff"
+# ("Senior Member of Technical Staff" is still dropped, for "senior").
+protect = ["member of technical staff"]
 us_only = true                 # keep US and unspecified-remote postings
 extra_locations = []           # also keep these places, e.g. ["Toronto"]
 allow_unknown_location = true  # keep postings that give no location at all

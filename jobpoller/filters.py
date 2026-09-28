@@ -63,7 +63,8 @@ _STATE_NAMES = _terms(list(US_STATES))
 _STATE_CODE = re.compile(r"(?:,|\s-|\()\s*(%s)(?![A-Za-z])" % "|".join(sorted(set(US_STATES.values()))))
 _CITY = _terms(US_CITIES)
 _SPLIT = re.compile(r"\s*(?:\||;|/|\bor\b)\s*")  # "London; New York", "SF/NYC", "Austin or Remote"
-_WORKPLACE_ONLY = re.compile(r"\b(?:hybrid|in[\s-]?office|on[\s-]?site|office|flexible)\b", re.I)
+# Location text that names no place: work arrangements (Cloudflare) and Workday's "2 Locations".
+_WORKPLACE_ONLY = re.compile(r"\b(?:hybrid|in[\s-]?office|on[\s-]?site|office|flexible|\d+\s+locations?)\b", re.I)
 _REMOTE = re.compile(r"remote|anywhere|distributed|work from home|wfh", re.I)
 
 
@@ -80,25 +81,28 @@ def is_us(place: str) -> bool:
 class Filters:
     include: list[str] = field(default_factory=list)
     exclude: list[str] = field(default_factory=list)
+    # Phrases blanked out before the exclude check, e.g. "member of technical staff" so that
+    # "staff" can be excluded without dropping MTS roles.
+    protect: list[str] = field(default_factory=list)
     us_only: bool = True
     extra_locations: list[str] = field(default_factory=list)  # also accepted, e.g. "Toronto"
     allow_unknown_location: bool = True
 
     def __post_init__(self):
         self._inc, self._exc = _terms(self.include), _terms(self.exclude)
-        self._extra = _terms(self.extra_locations)
+        self._protect, self._extra = _terms(self.protect), _terms(self.extra_locations)
 
     def title_ok(self, title: str) -> bool:
         if self._inc and not self._inc.search(title):
             return False
-        return not (self._exc and self._exc.search(title))
+        rest = self._protect.sub(" ", title) if self._protect else title
+        return not (self._exc and self._exc.search(rest))
 
     def location_ok(self, job: Job) -> bool:
         loc = job.location.strip()
         if not self.us_only:
             return True
-        # Some boards put the work arrangement in the location field ("Hybrid", "In-Office"),
-        # which says nothing about the country.
+        # Some boards put text in the location field that says nothing about the country.
         if not _WORKPLACE_ONLY.sub("", loc).strip(" |,;-()/"):
             return self.allow_unknown_location
         if self._extra and self._extra.search(loc):

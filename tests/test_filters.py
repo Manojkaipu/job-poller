@@ -28,6 +28,14 @@ def test_titles(title, ok):
     assert F.title_ok(title) is ok
 
 
+def test_protected_phrase_is_ignored_by_excludes_only():
+    f = Filters(include=["member of technical staff", "robotics"], exclude=["staff", "senior"],
+                protect=["member of technical staff"])
+    assert f.title_ok("Member of Technical Staff, Inference")
+    assert not f.title_ok("Senior Member of Technical Staff")
+    assert not f.title_ok("Staff Robotics Software Engineer - Mission Autonomy")  # got through the old pairs
+
+
 def test_no_include_means_everything():
     assert Filters(exclude=["senior"]).title_ok("Recruiter")
 
@@ -59,6 +67,7 @@ def test_non_us_places(place):
     ("Hybrid", None, True),                             # a work arrangement isn't a place (Cloudflare)
     ("In-Office", None, True),
     ("Hybrid | London", None, False),
+    ("2 Locations", None, True),                        # Workday's summary for multi-city postings
     ("Paris, France", True, False),                     # remote, but in France
     ("Anywhere", None, True),
 ])

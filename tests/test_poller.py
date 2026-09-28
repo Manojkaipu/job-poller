@@ -4,11 +4,11 @@ import textwrap
 import pytest
 
 from jobpoller import poller
-from jobpoller.ats import Job
+from jobpoller.ats import Job, Partial
 from jobpoller.filters import Filters
 from jobpoller.http import FetchError
 from jobpoller.poller import Company, Config, load_config, run
-from jobpoller.state import State
+from jobpoller.state import State, now
 
 
 def j(i, title="ML Engineer", location="San Francisco, CA"):
@@ -115,6 +115,19 @@ def test_duplicate_ids_on_a_board_are_collapsed(setup):
     assert len(cycle(cfg).fetched[0].jobs) == 1
 
 
+def test_partial_board_only_reports_postings_newer_than_its_first_run(setup):
+    boards, cfg = setup
+    today = now()[:10]
+    old = Job("Acme", "old", "ML Engineer", "https://x/old", location="Austin, TX", posted="2020-01-01")
+    fresh = Job("Acme", "new", "ML Engineer", "https://x/new", location="Austin, TX", posted=today)
+    undated = Job("Acme", "undated", "ML Engineer", "https://x/u", location="Austin, TX")
+    boards.jobs["acme"] = Partial([j(1)])
+    cycle(cfg)
+    # an older posting slides into the window as newer ones close; it must not be "new"
+    boards.jobs["acme"] = Partial([fresh, old, undated])
+    assert [x.id for x in cycle(cfg).new] == ["new"]
+
+
 def test_prune_forgets_old_postings_and_removed_boards(tmp_path):
     s = State(str(tmp_path / "s.json"))
     s.jobs = {"a:x": {"old": ["2026-01-01T00:00:00+00:00", "2026-01-02T00:00:00+00:00"],
@@ -153,3 +166,13 @@ def test_config_rejects_unknown_ats_and_duplicates(tmp_path):
     (tmp_path / "companies.toml").write_text('[[company]]\nname="A"\nats="lever"\nslug="a"\n' * 2)
     with pytest.raises(ValueError, match="listed twice"):
         load_config(str(tmp_path / "config.toml"))
+    (tmp_path / "companies.toml").write_text('[[company]]\nname="A"\nats="lever"\nslug="a"\nsearch=["x"]\n')
+    with pytest.raises(ValueError, match="only supported for workday"):
+        load_config(str(tmp_path / "config.toml"))
+
+
+def test_search_terms_reach_the_workday_fetcher(tmp_path, monkeypatch):
+    seen = {}
+    monkeypatch.setitem(poller.FETCHERS, "workday", lambda slug, company, search=(): seen.update(search=search) or [])
+    poller.fetch_one(Company("W", "workday", "w.wd5.myworkdayjobs.com/X", ("software engineer",)))
+    assert seen["search"] == ("software engineer",)

@@ -248,6 +248,41 @@ name = "Arize AI"
 ats = "greenhouse"
 slug = "arizeai"
 
+[[company]]
+name = "Mistral AI"
+ats = "ashby"
+slug = "mistral.ai"
+
+[[company]]
+name = "Groq"
+ats = "gem"
+slug = "groq"
+
+[[company]]
+name = "Cerebras"
+ats = "ashby"
+slug = "cerebras"
+
+[[company]]
+name = "Hebbia"
+ats = "ashby"
+slug = "hebbia-ai"
+
+[[company]]
+name = "Hippocratic AI"
+ats = "ashby"
+slug = "Hippocratic AI"
+
+[[company]]
+name = "Skild AI"
+ats = "greenhouse"
+slug = "skildai-careers"
+
+[[company]]
+name = "Runway"
+ats = "ashby"
+slug = "runway-ml"
+
 # --- Autonomy, robotics and defense -------------------------------------------
 
 [[company]]
@@ -289,6 +324,11 @@ slug = "palantir"
 name = "Skydio"
 ats = "ashby"
 slug = "skydio"
+
+[[company]]
+name = "Applied Intuition"
+ats = "ashby"
+slug = "applied"
 
 # --- Data, infrastructure and developer tools ---------------------------------
 
@@ -532,6 +572,31 @@ name = "Rubrik"
 ats = "greenhouse"
 slug = "rubrik"
 
+[[company]]
+name = "Superhuman (Grammarly)"
+ats = "ashby"
+slug = "Superhuman Platform Inc"
+
+[[company]]
+name = "Sourcegraph"
+ats = "greenhouse"
+slug = "sourcegraph91"
+
+[[company]]
+name = "Warp"
+ats = "greenhouse"
+slug = "warp"
+
+[[company]]
+name = "Gong"
+ats = "greenhouse"
+slug = "gongio"
+
+[[company]]
+name = "Cohesity"
+ats = "workday"
+slug = "cohesity.wd5.myworkdayjobs.com/Cohesity_Careers"
+
 # --- Fintech ------------------------------------------------------------------
 
 [[company]]
@@ -671,6 +736,16 @@ name = "Descript"
 ats = "greenhouse"
 slug = "descript"
 
+[[company]]
+name = "Zillow"
+ats = "workday"
+slug = "zillow.wd5.myworkdayjobs.com/Zillow_Group_External"
+
+[[company]]
+name = "Olo"
+ats = "lever"
+slug = "olo"
+
 # --- Arizona ------------------------------------------------------------------
 
 [[company]]
@@ -703,7 +778,22 @@ name = "Lucid Motors"
 ats = "greenhouse"
 slug = "lucidmotors"
 
-# --- Large companies (Workday, SmartRecruiters) -------------------------------
+[[company]]
+name = "Early Warning (Zelle)"
+ats = "workday"
+slug = "earlywarning.wd5.myworkdayjobs.com/earlywarningcareers"
+
+[[company]]
+name = "WebPT"
+ats = "ukg"
+slug = "recruiting2.ultipro.com/WEB1004WEBIN/JobBoard/1786dc47-531b-4fc7-a333-399de6a6684c"
+
+[[company]]
+name = "onsemi"
+ats = "oracle"
+slug = "hctz.fa.us2.oraclecloud.com/CX_1001"
+
+# --- Large companies (Workday, SmartRecruiters, Oracle, Eightfold) ------------
 
 [[company]]
 name = "NVIDIA"
@@ -749,3 +839,34 @@ slug = "capitalone.wd12.myworkdayjobs.com/Capital_One"
 name = "ServiceNow"
 ats = "smartrecruiters"
 slug = "ServiceNow"
+
+[[company]]
+name = "Visa"
+ats = "workday"
+slug = "visa.wd5.myworkdayjobs.com/Visa"
+
+[[company]]
+name = "Walmart"
+ats = "workday"
+slug = "walmart.wd504.myworkdayjobs.com/WalmartExternal"
+search = ["software engineer", "data scientist", "machine learning", "data engineer"]  # the full board is mostly store roles
+
+[[company]]
+name = "Dell"
+ats = "oracle"
+slug = "enterpriseplatform.dell.com/CX_1001"
+
+[[company]]
+name = "Honeywell"
+ats = "oracle"
+slug = "ibqbjb.fa.ocs.oraclecloud.com/CX_1"
+
+[[company]]
+name = "Netflix"
+ats = "eightfold"
+slug = "explore.jobs.netflix.net/netflix.com"
+
+[[company]]
+name = "Qualcomm"
+ats = "eightfold"
+slug = "careers.qualcomm.com/qualcomm.com"

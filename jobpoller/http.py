@@ -33,12 +33,13 @@ def _request(url: str, *, body: dict | None = None, accept: str = "application/j
         except urllib.error.HTTPError as e:
             if e.code not in RETRY_STATUS or attempt == RETRIES - 1:
                 raise FetchError(f"HTTP {e.code} from {url}", e.code) from None
-            wait = float(e.headers.get("Retry-After") or 0) or 2 ** attempt
+            # A 429 without Retry-After usually means a per-minute quota: back off for real.
+            wait = float(e.headers.get("Retry-After") or 0) or (10 * 2 ** attempt if e.code == 429 else 2 ** attempt)
         except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
             if attempt == RETRIES - 1:
                 raise FetchError(f"{type(e).__name__} from {url}: {e}") from None
             wait = 2 ** attempt
-        time.sleep(min(wait, 30) + random.random())
+        time.sleep(min(wait, 60) + random.random())
     raise AssertionError("unreachable")
 
 

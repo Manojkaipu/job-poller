@@ -8,7 +8,7 @@ import tomllib
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
-from .ats import FETCHERS, Job
+from .ats import FETCHERS, Job, Partial
 from .filters import Filters
 from .http import FetchError
 from .state import BoardResult, State, now
@@ -19,6 +19,7 @@ class Company:
     name: str
     ats: str
     slug: str
+    search: tuple[str, ...] = ()  # Workday only: search terms instead of the whole board
 
     @property
     def key(self) -> str:
@@ -46,7 +47,9 @@ def load_config(path: str = "config.toml", companies_path: str | None = None) ->
     for c in raw:
         if c["ats"] not in FETCHERS:
             raise ValueError(f"{c['name']}: unknown ats {c['ats']!r}; expected one of {', '.join(FETCHERS)}")
-        co = Company(c["name"], c["ats"], c["slug"])
+        co = Company(c["name"], c["ats"], c["slug"], tuple(c.get("search", ())))
+        if co.search and co.ats != "workday":
+            raise ValueError(f"{co.name}: `search` is only supported for workday boards")
         if co.key in keys:
             raise ValueError(f"{co.name}: board {co.key} is listed twice")
         keys.add(co.key)
@@ -56,7 +59,7 @@ def load_config(path: str = "config.toml", companies_path: str | None = None) ->
     f = cfg.get("filters", {})
     state_file = s.get("state_file", "state/seen.json")
     return Config(
-        filters=Filters(include=f.get("include", []), exclude=f.get("exclude", []),
+        filters=Filters(include=f.get("include", []), exclude=f.get("exclude", []), protect=f.get("protect", []),
                         us_only=f.get("us_only", True), extra_locations=f.get("extra_locations", []),
                         allow_unknown_location=f.get("allow_unknown_location", True)),
         companies=companies,
@@ -72,16 +75,18 @@ class Fetched:
     jobs: list[Job] = field(default_factory=list)
     error: str | None = None
     seconds: float = 0.0
+    partial: bool = False  # only the newest postings were read (see ats.Partial)
 
 
 def fetch_one(c: Company) -> Fetched:
     t = time.monotonic()
     try:
+        jobs = FETCHERS[c.ats](c.slug, c.name, **({"search": c.search} if c.search else {}))
         # Some boards list one posting under several locations with the same id; keep the first.
         unique: dict[str, Job] = {}
-        for j in FETCHERS[c.ats](c.slug, c.name):
+        for j in jobs:
             unique.setdefault(j.id, j)
-        return Fetched(c, list(unique.values()), seconds=time.monotonic() - t)
+        return Fetched(c, list(unique.values()), seconds=time.monotonic() - t, partial=isinstance(jobs, Partial))
     except FetchError as e:
         return Fetched(c, error=str(e), seconds=time.monotonic() - t)
     except Exception as e:  # a board changing its format shouldn't take the whole run down
@@ -123,6 +128,11 @@ def run(cfg: Config, state: State, log=print) -> RunReport:
             baselined[f.company.name] = len(ids)
         else:
             fresh = state.new_ids(key, ids)
+            if f.partial:
+                # An old posting can slide into a partial window when newer ones close; only
+                # count it if it was posted after this board was first polled.
+                since = state.boards[key]["first_run"][:10]
+                fresh = {j.id for j in f.jobs if j.id in fresh and j.posted and j.posted >= since}
             new += [j for j in f.jobs if j.id in fresh and cfg.filters.match(j)]
             prev = state.boards[key].get("count") or 0
             if not ids and prev >= 5:

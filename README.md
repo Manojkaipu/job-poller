@@ -1,6 +1,6 @@
 # job-poller
 
-Checks the public job boards of 147 companies every 4 hours, keeps the postings whose title and location match what I'm looking for, and emails me the ones that weren't there on the last run.
+Checks the public job boards of 171 companies every 4 hours, keeps the postings whose title and location match what I'm looking for, and emails me the ones that weren't there on the last run.
 
 Job sites and LinkedIn alerts often lag the company's own board, and they cover smaller companies unevenly. Most companies post through an applicant tracking system (ATS) that serves its job board from a public JSON endpoint, so polling those directly gets a posting within hours of it going up.
 
@@ -26,14 +26,22 @@ I went through the ~90 tools listed on [everyats.com](https://everyats.com/) and
 | Dover | `app.dover.com/api/v1/careers-page/{id}/jobs` | careers-page slug | |
 | Manatal | `api.manatal.com/open/v3/career-page/{slug}/jobs/` | career page | Qdrant |
 | Teamtailor | `{slug}.teamtailor.com/jobs.rss` | subdomain or full host | |
-| Workday | `{host}/wday/cxs/{tenant}/{site}/jobs` | careers-site URL, e.g. `nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite` | NVIDIA, Intel, Adobe |
+| Workday | `{host}/wday/cxs/{tenant}/{site}/jobs` | careers-site URL, e.g. `nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite` | NVIDIA, Zillow, Visa |
+| Oracle Recruiting Cloud | `{host}/hcmRestApi/resources/latest/recruitingCEJobRequisitions` | `host/siteNumber`, e.g. `ibqbjb.fa.ocs.oraclecloud.com/CX_1` | Dell, Honeywell, onsemi |
+| Eightfold | `{host}/api/apply/v2/jobs`, or `/api/pcsx/search` on newer sites | `careers-host/email-domain`, e.g. `explore.jobs.netflix.net/netflix.com` | Netflix, Qualcomm |
+| UKG Pro (UltiPro) | `{board}/JobBoardView/LoadSearchResults` | job board URL, `recruiting2.ultipro.com/{tenant}/JobBoard/{id}` | WebPT |
 
 Every one of these was checked against a live board before the fetcher was written, and the tests run each fetcher against a recorded response.
 
-`companies.toml` has 147 companies: AI and ML startups (49), autonomy and defense (8), data, infrastructure and developer tools (48), fintech (9), consumer tech (18), Phoenix-area employers (6) and a few large companies on Workday and SmartRecruiters (9). On 2026-09-28 they had 31,535 open postings between them; a full run takes about 2 minutes, most of it NVIDIA's Workday board.
+`companies.toml` has 171 companies: AI and ML startups (56), autonomy and defense (9), data, infrastructure and developer tools (53), fintech (9), consumer tech (20), Phoenix-area employers (9) and large companies (15). A full run takes about 2 minutes.
 
-What I left out from that list, and why:
-* **No public feed:** JazzHR (its export feed now returns 410 Gone), Getro (the API needs the network owner's key), iCIMS, Taleo / Oracle, SAP SuccessFactors, Avature, Phenom, Eightfold, Cornerstone, Brassring, UKG, ADP, Paycor. Their boards are server-rendered pages or need per-tenant scraping.
+**Companies I looked for and couldn't add:**
+* Covered by the company that bought them: Neon (Databricks), Replicate (Cloudflare), Weights & Biases (CoreWeave), dbt Labs (merged with Fivetran).
+* No public feed: Snyk and Deel run their own job sites, Paylocity's careers site refuses automated requests, Aurora's Greenhouse board is private (single postings are public, the list isn't); Contextual AI, Offerpad and Keap render their openings client-side from sources I couldn't identify.
+* Gone: Nikola (bankrupt).
+
+What I left out from everyats.com's list, and why:
+* **No public feed:** JazzHR (its export feed now returns 410 Gone), Getro (the API needs the network owner's key), iCIMS, Taleo, SAP SuccessFactors, Avature, Phenom, Cornerstone, Brassring, ADP, Paycor. Their boards are server-rendered pages or need per-tenant scraping.
 * **Not job boards:** staffing-agency CRMs (Bullhorn, JobDiva, Loxo, Vincere, Recruit CRM, Recruiterflow, TrackerRMS, Mercury, Ezekia, Clockwork), sourcing tools (Juicebox, ATZ CRM), screening add-ons (ApplicantAI, TalentClerk, Spark Hire, Typeform) and HR/payroll suites (Deel, Gusto, TriNet, Zoho, iSolved, Sage).
 * **Wrong market:** schools (Frontline, Every by Iris), healthcare and hourly hiring (Apploi, Fountain, TalentReef, Paradox), public sector (JobAps), and small regional tools (Glorri, Folks, Hirefly, Talexio).
 
@@ -82,9 +90,21 @@ ats = "gem"
 slug = "retool"
 ```
 
-For Workday or a SmartRecruiters company, open their careers page and copy the host/site or company id from the URL.
+`discover` only guesses from the name. When it finds nothing, open the company's careers page and click through to a posting: the URL usually names the ATS and the slug (`jobs.ashbyhq.com/mistral.ai/...`, `cohesity.wd5.myworkdayjobs.com/Cohesity_Careers/...`, `.../hcmUI/CandidateExperience/en/sites/CX_1001/...`). Slugs are often not the company name: Applied Intuition is Ashby `applied`, Gong is Greenhouse `gongio`, Hippocratic AI is Ashby `Hippocratic AI` with the space.
 
-**Filters** are in `config.toml`. A title has to contain one of the `include` terms and none of the `exclude` terms, as whole words: `ml` matches "ML Engineer" but not "HTML". Location is checked against US states, state codes, major cities and country names, so "US, CA, Santa Clara", "New York City, NY" and "Remote - US" pass while "London", "Toronto, ON" and "Remote - EMEA" don't. A posting with no location, or plain "Remote", is kept.
+A Workday board can be narrowed with Workday's own search, which matters for boards so big that Workday's 2,000-posting cap cuts them off:
+
+```toml
+[[company]]
+name = "Walmart"
+ats = "workday"
+slug = "walmart.wd504.myworkdayjobs.com/WalmartExternal"
+search = ["software engineer", "data scientist", "machine learning", "data engineer"]
+```
+
+Changing a board's `search` changes which postings it returns, so expect one run of "new" postings from the widened part.
+
+**Filters** are in `config.toml`. A title has to contain one of the `include` terms and none of the `exclude` terms, as whole words: `ml` matches "ML Engineer" but not "HTML". Phrases in `protect` are ignored by the exclude check, so `staff` can be excluded without losing "Member of Technical Staff". Location is checked against US states, state codes, major cities and country names, so "US, CA, Santa Clara", "New York City, NY" and "Remote - US" pass while "London", "Toronto, ON" and "Remote - EMEA" don't. A posting with no location, or plain "Remote", is kept.
 
 ## Scheduling
 
@@ -109,11 +129,13 @@ Use one or the other: each keeps its own state.
 * **Forgetting.** A posting that has been gone for 45 days is dropped from the state; if it's re-posted after that it's reported again. Removing a company from the config drops its state.
 * **Email last, save after.** The state is saved only after the email is sent, so a failed send is retried on the next run instead of being lost.
 * **Size limit.** A board with more than 5,000 postings is refused as probably not a company (Mercor's contractor marketplace on Manatal has 16,000) rather than paged through for minutes.
+* **Partial boards.** Eightfold (Netflix, Qualcomm) allows about 20 requests a minute at 10 postings each, so reading Qualcomm's 2,000 postings would take 10 minutes. Eightfold boards are read one paced page at a time, sorted newest first, and boards over 200 postings are read as a window of the newest 200 (new postings land at the top). Because an older posting can slide into that window when newer ones close, a posting on a partial board only counts as new if its posted date is after the board was first polled.
+* **Slow boards in parallel.** Workday serves 20 postings per request, so its pages are fetched 4 at a time: NVIDIA's ~2,000 postings take about 30 seconds.
 
 ## Limitations
 
 * Filtering is on title and location only. Descriptions aren't fetched for every board, so "no visa sponsorship" or years-of-experience requirements aren't checked.
-* Workday's list gives no posting dates, and large Workday boards take ~100 requests per run (20 postings per page). NVIDIA reports exactly 2,000 postings, which looks like a cap on Workday's side, so the tail of its board may be missed.
+* Workday's list gives no posting dates, and caps a listing at 2,000 postings: NVIDIA reports exactly that, so the tail of its board may be missed. `search` terms (as for Walmart) are the workaround.
 * Companies that host their own careers site without one of these ATSs (Google, Meta, Apple, Microsoft, Amazon) aren't covered.
 * Location parsing is heuristic. "Remote" with no country counts as US; an unusual format may be misread. `extra_locations` and `us_only = false` are the escape hatches.
 
@@ -125,4 +147,7 @@ Things that went wrong while building it, and the check that caught each:
 * **A board that never ended.** Mercor's Manatal board is its contractor marketplace, with ~16,600 postings served 10 at a time, and the first discovery pass hung on it. Timing each attempt found it; boards over 5,000 postings are now refused, and Manatal is fetched 100 per page.
 * **Namesakes.** Name-based discovery found Figure Lending for Figure AI, a UK telesales firm for Together AI, a Dutch hotel group for Clay and a Brazilian bank for Neon. Every hit was checked against its sample titles before going into `companies.toml`.
 * **"Hybrid" isn't a place.** Cloudflare's board puts the work arrangement in the location field, so its postings were all rejected as non-US. Listing the engineering postings the filters rejected on boards with suspiciously few matches caught it.
-* **Seven wrong Workday URLs.** Guessed site names for Dell, Qualcomm, Netflix and others return HTTP 422; only the eight that answered went in.
+* **Wrong Workday guesses.** Guessed site names for Dell, Qualcomm, Netflix and others returned HTTP 422. Fingerprinting their careers pages showed Dell and Honeywell are on Oracle and Netflix and Qualcomm on Eightfold, which is why those two fetchers exist; Walmart's board was right but lives on a different Workday host (`wd504`).
+* **Stale search results.** Web searches pointed Snyk, dbt Labs and Grammarly at Greenhouse boards that now return 404. Every slug was fetched before it went in, so none of those made it into `companies.toml`.
+* **"2 Locations".** Workday summarizes multi-city postings as "2 Locations", which the US filter read as a foreign place and dropped. Found by fetching NVIDIA with the new parallel paging; it now counts as an unknown location.
+* **Unencoded slugs.** Hippocratic AI's Ashby board name has a space, which the Ashby fetcher sent unencoded.
