@@ -113,7 +113,7 @@ Changing a board's `search` changes which postings it returns, so expect one run
 
 ## Scheduling
 
-**GitHub Actions** (recommended, since it runs when the laptop is asleep): `.github/workflows/poll.yml` runs every 15 minutes, so a posting reaches your inbox within about 15-30 minutes of going up (GitHub starts scheduled runs late when it's busy). Public repos get unlimited Actions minutes; a private repo's free 2,000 minutes a month would only cover an hourly schedule. Add `SMTP_USER`, `SMTP_PASSWORD` and optionally `MAIL_TO` as repository secrets. The state file is kept in the Actions cache, not committed, so the repo doesn't grow a commit per run. GitHub pauses scheduled workflows in a repo with no activity for 60 days; re-enable it from the Actions tab if that happens.
+**GitHub Actions** (recommended, since it runs when the laptop is asleep): `.github/workflows/poll.yml` runs every 15 minutes, so a posting reaches your inbox within about 15-30 minutes of going up (GitHub starts scheduled runs late when it's busy). Public repos get unlimited Actions minutes; a private repo's free 2,000 minutes a month would only cover an hourly schedule. Add `SMTP_USER`, `SMTP_PASSWORD` and optionally `MAIL_TO` as repository secrets. The state file is kept in the Actions cache, not committed, so the repo doesn't grow a commit per run. GitHub pauses scheduled workflows in a public repo with no activity for 60 days, and the poller never commits, so `keepalive.yml` re-enables the poll workflow on the 1st of each month.
 
 **Windows Task Scheduler**, if you'd rather run it locally:
 
