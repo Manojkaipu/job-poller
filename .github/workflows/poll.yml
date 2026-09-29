@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "*/15 * * * *"  # every 15 minutes (GitHub may start scheduled runs a few minutes late)
   workflow_dispatch:
+    inputs:
+      test_email:
+        description: "Also send a test email (checks the SMTP secrets)"
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths: ["jobpoller/**", "tests/**", "pyproject.toml"]
@@ -44,7 +49,9 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
-        run: python -m jobpoller run
+        run: |
+          python -m jobpoller run
+          if [ "${{ inputs.test_email }}" = "true" ]; then python -m jobpoller test-email; fi
 
       - uses: actions/cache/save@v4
         if: always()
