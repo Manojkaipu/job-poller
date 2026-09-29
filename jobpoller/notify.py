@@ -9,6 +9,7 @@
 """
 from __future__ import annotations
 
+import datetime as dt
 import html
 import os
 import smtplib
@@ -40,6 +41,25 @@ def subject(new: list[Job]) -> str:
     return f"{len(new)} new job{'s' * (len(new) != 1)}: {names}"
 
 
+def posted_label(job: Job, now: dt.datetime | None = None) -> str:
+    """ "posted 3h ago" when the board gives a time, "posted 2026-09-27" when it gives a date."""
+    if not job.posted:
+        return ""
+    if len(job.posted) == 10:
+        return f"posted {job.posted}"
+    now = now or dt.datetime.now(dt.timezone.utc)
+    mins = int((now - dt.datetime.fromisoformat(job.posted.replace("Z", "+00:00"))).total_seconds() // 60)
+    if mins < 60:
+        return f"posted {max(mins, 0)}m ago"
+    if mins < 48 * 60:
+        return f"posted {mins // 60}h ago"
+    return f"posted {job.posted[:10]}"
+
+
+def _meta(job: Job) -> list[str]:
+    return [x for x in (job.location, "remote" if job.remote else "", posted_label(job)) if x]
+
+
 def _by_company(jobs: list[Job]) -> dict[str, list[Job]]:
     groups = defaultdict(list)
     for j in sorted(jobs, key=lambda j: (j.company.lower(), j.title.lower())):
@@ -52,8 +72,8 @@ def render_text(new: list[Job], problems: list[str]) -> str:
     for company, jobs in _by_company(new).items():
         lines.append(f"{company} ({len(jobs)})")
         for j in jobs:
-            meta = " · ".join(x for x in (j.location, "remote" if j.remote else "", j.posted and f"posted {j.posted}") if x)
-            lines += [f"  {j.title}", *([f"    {meta}"] if meta else []), f"    {j.url}"]
+            meta = " · ".join(_meta(j))
+            lines +=[f"  {j.title}", *([f"    {meta}"] if meta else []), f"    {j.url}"]
         lines.append("")
     if problems:
         lines += ["Boards needing attention:", *[f"  - {p}" for p in problems]]
@@ -66,7 +86,7 @@ def render_html(new: list[Job], problems: list[str]) -> str:
     for company, jobs in _by_company(new).items():
         parts.append(f'<h3 style="margin:18px 0 6px;font-size:15px">{e(company)} <span style="color:#777;font-weight:normal">({len(jobs)})</span></h3>')
         for j in jobs:
-            meta = " · ".join(e(x) for x in (j.location, "remote" if j.remote else "", j.posted and f"posted {j.posted}") if x)
+            meta = " · ".join(e(x) for x in _meta(j))
             parts.append(f'<div style="margin:0 0 8px"><a href="{e(j.url, quote=True)}" style="color:#0b57d0;text-decoration:none;font-weight:600">{e(j.title)}</a>'
                          f'<div style="color:#666;font-size:12px">{meta}</div></div>')
     if problems:

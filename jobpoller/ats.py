@@ -33,7 +33,7 @@ class Job:
     url: str
     location: str = ""  # every location, joined with " | "
     remote: bool | None = None
-    posted: str | None = None  # ISO date when the board gives one
+    posted: str | None = None  # UTC "YYYY-MM-DDTHH:MM:SSZ", or "YYYY-MM-DD" when the board gives no time
     department: str | None = None
 
 
@@ -60,7 +60,35 @@ def _check_size(n: int, slug: str) -> None:
 
 
 def _date(s) -> str | None:
-    return s[:10] if isinstance(s, str) and re.match(r"\d{4}-\d{2}-\d{2}", s) else None
+    """A board's posted time as UTC "YYYY-MM-DDTHH:MM:SSZ", or just "YYYY-MM-DD" if it gives no time."""
+    if not isinstance(s, str) or not re.match(r"\d{4}-\d{2}-\d{2}", s.strip()):
+        return None
+    s = s.strip()
+    if len(s) == 10:
+        return s
+    try:
+        t = dt.datetime.fromisoformat(s.replace(" UTC", "+00:00"))
+    except ValueError:
+        return s[:10]
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=dt.timezone.utc)
+    return _utc(t)
+
+
+def _utc(t: dt.datetime) -> str:
+    return t.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _workday_posted(text: str | None, today: dt.date | None = None) -> str | None:
+    """Workday only says "Posted Today", "Posted Yesterday", "Posted 3 Days Ago" or "Posted 30+ Days Ago"."""
+    today = today or dt.datetime.now(dt.timezone.utc).date()
+    t = (text or "").lower()
+    if "today" in t:
+        return today.isoformat()
+    if "yesterday" in t:
+        return (today - dt.timedelta(days=1)).isoformat()
+    m = re.search(r"(\d+)(\+?) days? ago", t)
+    return (today - dt.timedelta(days=int(m.group(1)))).isoformat() if m else None
 
 
 # --- the big three for startups -------------------------------------------------------------
@@ -69,7 +97,7 @@ def greenhouse(slug: str, company: str) -> list[Job]:
     data = get_json(f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs")
     return [Job(company, str(j["id"]), j["title"].strip(), j["absolute_url"],
                 location=(j.get("location") or {}).get("name", ""),
-                posted=_date(j.get("first_published") or j.get("updated_at")))
+                posted=_date(j.get("first_published")))  # not updated_at: edits aren't new postings
             for j in data["jobs"]]
 
 
@@ -94,7 +122,7 @@ def lever(slug: str, company: str) -> list[Job]:
 def _ms_date(ms) -> str | None:
     if not isinstance(ms, (int, float)):
         return None
-    return dt.datetime.fromtimestamp(ms / 1000, dt.timezone.utc).date().isoformat()
+    return _utc(dt.datetime.fromtimestamp(ms / 1000, dt.timezone.utc))
 
 
 def ashby(slug: str, company: str) -> list[Job]:
@@ -261,7 +289,7 @@ def teamtailor(slug: str, company: str) -> list[Job]:
 
 def _rfc822_date(s: str | None) -> str | None:
     try:
-        return parsedate_to_datetime(s).date().isoformat() if s else None
+        return _utc(parsedate_to_datetime(s)) if s else None
     except (TypeError, ValueError):
         return None
 
@@ -301,7 +329,8 @@ def workday(slug: str, company: str, search: tuple[str, ...] = ()) -> list[Job]:
                 if "externalPath" in j and j["externalPath"] not in out:
                     out[j["externalPath"]] = Job(company, j["externalPath"], j["title"].strip(),
                                                  f"https://{host}/{site}{j['externalPath']}",
-                                                 location=j.get("locationsText", ""))
+                                                 location=j.get("locationsText", ""),
+                                                 posted=_workday_posted(j.get("postedOn")))
     return list(out.values())
 
 

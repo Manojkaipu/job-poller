@@ -27,6 +27,17 @@ def test_text_version():
     assert "Austin, TX · remote · posted 2026-09-27" in t
 
 
+def test_posted_label():
+    import datetime as dt
+    now = dt.datetime(2026, 9, 28, 18, 0, tzinfo=dt.timezone.utc)
+    job = lambda p: Job("A", "1", "x", "https://x", posted=p)
+    assert notify.posted_label(job("2026-09-28T17:35:00Z"), now) == "posted 25m ago"
+    assert notify.posted_label(job("2026-09-28T09:00:00Z"), now) == "posted 9h ago"
+    assert notify.posted_label(job("2026-09-20T09:00:00Z"), now) == "posted 2026-09-20"
+    assert notify.posted_label(job("2026-09-27"), now) == "posted 2026-09-27"
+    assert notify.posted_label(job(None), now) == ""
+
+
 def test_dotenv_does_not_override_real_env(tmp_path, monkeypatch):
     p = tmp_path / ".env"
     p.write_text("SMTP_USER=file@example.com\n# comment\nMAIL_TO='a@x.com, b@x.com'\n")

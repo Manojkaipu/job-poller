@@ -1,6 +1,7 @@
 """Load the config, fetch every board in parallel, diff against the state, and report what's new."""
 from __future__ import annotations
 
+import datetime as dt
 import os
 import sys
 import time
@@ -11,6 +12,7 @@ from dataclasses import dataclass, field
 from .ats import FETCHERS, Job, Partial
 from .filters import Filters
 from .http import FetchError
+from .notify import posted_label
 from .state import BoardResult, State, now
 
 
@@ -39,9 +41,11 @@ def load_config(path: str = "config.toml", companies_path: str | None = None) ->
     with open(path, "rb") as f:
         cfg = tomllib.load(f)
     base = os.path.dirname(os.path.abspath(path))
-    companies_path = companies_path or os.path.join(base, cfg.get("settings", {}).get("companies_file", "companies.toml"))
-    with open(companies_path, "rb") as f:
-        raw = tomllib.load(f).get("company", [])
+    files = companies_path or cfg.get("settings", {}).get("companies_file", "companies.toml")
+    raw = []
+    for name in [files] if isinstance(files, str) else files:  # one file, or a list of them
+        with open(os.path.join(base, name), "rb") as f:
+            raw += tomllib.load(f).get("company", [])
 
     companies, keys = [], set()
     for c in raw:
@@ -61,7 +65,8 @@ def load_config(path: str = "config.toml", companies_path: str | None = None) ->
     return Config(
         filters=Filters(include=f.get("include", []), exclude=f.get("exclude", []), protect=f.get("protect", []),
                         us_only=f.get("us_only", True), extra_locations=f.get("extra_locations", []),
-                        allow_unknown_location=f.get("allow_unknown_location", True)),
+                        allow_unknown_location=f.get("allow_unknown_location", True),
+                        max_age_hours=f.get("max_age_hours", 0)),
         companies=companies,
         state_file=os.path.normpath(os.path.join(base, state_file)),
         workers=s.get("workers", 8),
@@ -108,6 +113,7 @@ class RunReport:
 
 
 def run(cfg: Config, state: State, log=print) -> RunReport:
+    run_started = dt.datetime.now(dt.timezone.utc)
     fetched = fetch_all(cfg.companies, cfg.workers)
     when = now()
     new, baselined, problems, alert_problems = [], {}, [], False
@@ -127,13 +133,14 @@ def run(cfg: Config, state: State, log=print) -> RunReport:
         if state.is_baseline(key):
             baselined[f.company.name] = len(ids)
         else:
-            fresh = state.new_ids(key, ids)
+            unseen = state.new_ids(key, ids)
             if f.partial:
                 # An old posting can slide into a partial window when newer ones close; only
                 # count it if it was posted after this board was first polled.
                 since = state.boards[key]["first_run"][:10]
-                fresh = {j.id for j in f.jobs if j.id in fresh and j.posted and j.posted >= since}
-            new += [j for j in f.jobs if j.id in fresh and cfg.filters.match(j)]
+                unseen = {j.id for j in f.jobs if j.id in unseen and j.posted and j.posted >= since}
+            new += [j for j in f.jobs
+                    if j.id in unseen and cfg.filters.match(j) and cfg.filters.fresh(j, run_started)]
             prev = state.boards[key].get("count") or 0
             if not ids and prev >= 5:
                 problems.append(f"{f.company.name} ({key}): 0 postings, had {prev}. Did the board move?")
@@ -157,5 +164,5 @@ def summarize(report: RunReport, log=print) -> None:
 
 def print_jobs(jobs: list[Job], out=sys.stdout) -> None:
     for j in sorted(jobs, key=lambda j: (j.company.lower(), j.title.lower())):
-        extra = " · ".join(x for x in (j.location, "remote" if j.remote else "", j.posted or "") if x)
+        extra = " · ".join(x for x in (j.location, "remote" if j.remote else "", posted_label(j)) if x)
         print(f"{j.company:22} {j.title}\n{'':22} {extra}\n{'':22} {j.url}", file=out)

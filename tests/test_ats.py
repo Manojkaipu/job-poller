@@ -46,14 +46,34 @@ def test_greenhouse_fields(monkeypatch):
     j = ats.greenhouse("anthropic", "Anthropic")[0]
     assert j.id == "4461450008"
     assert j.url == "https://job-boards.greenhouse.io/anthropic/jobs/4461450008"
-    assert j.posted == "2024-12-20"
+    assert j.posted == "2024-12-20T18:53:38Z"  # 13:53:38-05:00 in UTC
 
 
 def test_ashby_joins_primary_and_address(monkeypatch):
     monkeypatch.setattr(ats, "get_json", lambda url, **kw: {"jobs": load("ashby")})
     j = ats.ashby("openai", "OpenAI")[0]
     assert j.location == "San Francisco | San Francisco, California, United States"
-    assert j.posted == "2026-03-12"
+    assert j.posted == "2026-03-12T16:38:15Z"
+
+
+@pytest.mark.parametrize("raw,expected", [
+    ("2026-09-25 15:46:07 UTC", "2026-09-25T15:46:07Z"),      # Recruitee
+    ("2026-09-24T17:17:22.405Z", "2026-09-24T17:17:22Z"),     # UKG, Breezy
+    ("2026-09-28T17:49:51.367-07:00", "2026-09-29T00:49:51Z"),
+    ("2026-07-30", "2026-07-30"),                             # Workable, Oracle: date only
+    ("not a date", None), (None, None),
+])
+def test_posted_times_are_normalized_to_utc(raw, expected):
+    assert ats._date(raw) == expected
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("Posted Today", "2026-09-28"), ("Posted Yesterday", "2026-09-27"),
+    ("Posted 3 Days Ago", "2026-09-25"), ("Posted 30+ Days Ago", "2026-08-29"), ("", None),
+])
+def test_workday_posted_text(text, expected):
+    import datetime as dt
+    assert ats._workday_posted(text, today=dt.date(2026, 9, 28)) == expected
 
 
 def test_lever_pages_until_short_page(monkeypatch):
@@ -129,7 +149,7 @@ def test_eightfold_v2(monkeypatch):
     assert not isinstance(jobs, ats.Partial) and len(jobs) == 25  # small board: read whole
     assert urls[0] == "https://explore.jobs.netflix.net/api/apply/v2/jobs?domain=netflix.com&start=0&num=10&sort_by=new"
     j = jobs[0]
-    assert (j.title, j.location, j.posted) == ("AI Engineer 6 - Ads", "Remote, United States", "2024-07-23")
+    assert (j.title, j.location, j.posted) == ("AI Engineer 6 - Ads", "Remote, United States", "2024-07-23T00:00:00Z")
 
 
 def test_eightfold_falls_back_to_pcsx_and_reads_a_partial_window(monkeypatch):
@@ -148,7 +168,7 @@ def test_eightfold_falls_back_to_pcsx_and_reads_a_partial_window(monkeypatch):
     assert isinstance(jobs, ats.Partial) and len(jobs) == ats.EIGHTFOLD_PAGES * 10
     assert len(urls) == 1 + ats.EIGHTFOLD_PAGES  # the refused v2 call, then the window only
     assert jobs[0].url == "https://careers.qualcomm.com/careers/job/446720745160"  # host + positionUrl
-    assert jobs[0].posted == "2026-09-28" and jobs[0].department == "Hardware Engineering"
+    assert jobs[0].posted == "2026-09-28T00:00:00Z" and jobs[0].department == "Hardware Engineering"
 
 
 def test_eightfold_other_errors_are_not_swallowed(monkeypatch):
@@ -231,7 +251,7 @@ def test_ukg(monkeypatch):
     j = jobs[0]
     assert j.url == f"https://{board}/OpportunityDetail?opportunityId=0"
     assert j.location == "United States | Phoenix, Arizona, United States"
-    assert (j.title, j.posted, j.department) == ("Data Scientist", "2026-09-24", "Data")
+    assert (j.title, j.posted, j.department) == ("Data Scientist", "2026-09-24T17:17:22Z", "Data")
 
 
 def test_workday_rejects_bad_slug():
@@ -270,4 +290,4 @@ def test_teamtailor_rss(monkeypatch):
     [j] = ats.teamtailor("acme", "Acme")
     assert urls == ["https://acme.teamtailor.com/jobs.rss"]
     assert (j.id, j.title, j.location, j.remote, j.posted, j.department) == (
-        "fb63bcb7", "ML Engineer", "Austin, United States", True, "2026-04-23", "Eng")
+        "fb63bcb7", "ML Engineer", "Austin, United States", True, "2026-04-23T10:41:59Z", "Eng")

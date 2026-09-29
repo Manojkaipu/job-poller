@@ -85,5 +85,19 @@ def test_extra_locations():
     assert not f.location_ok(job(location="Vancouver, BC, Canada"))
 
 
+def test_max_age():
+    import datetime as dt
+    now = dt.datetime(2026, 9, 28, 18, 0, tzinfo=dt.timezone.utc)
+    f = Filters(max_age_hours=24)
+    posted = lambda p: Job("A", "1", "x", "https://x", posted=p)
+    assert f.fresh(posted("2026-09-28T09:00:00Z"), now)
+    assert f.fresh(posted("2026-09-27T18:00:00Z"), now)       # exactly 24h
+    assert not f.fresh(posted("2026-09-27T17:59:00Z"), now)
+    assert f.fresh(posted("2026-09-27"), now)                 # date only: the cutoff's day counts
+    assert not f.fresh(posted("2026-09-26"), now)
+    assert f.fresh(posted(None), now)                         # no date: can't tell, keep
+    assert Filters().fresh(posted("2020-01-01"), now)         # 0 = no limit
+
+
 def test_us_only_off():
     assert Filters(us_only=False).location_ok(job(location="Berlin, Germany"))

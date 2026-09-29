@@ -59,6 +59,18 @@ def test_first_run_is_a_silent_baseline_then_only_new_postings_alert(setup):
     assert r.new == []  # nothing reported twice
 
 
+def test_new_but_old_postings_are_not_alerted(setup):
+    boards, cfg = setup
+    cfg.filters = Filters(include=["ml engineer"], max_age_hours=24)
+    boards.jobs["acme"] = [j(1)]
+    cycle(cfg)
+    reopened = Job("Acme", "2", "ML Engineer", "https://x/2", location="Austin, TX", posted="2025-01-10T00:00:00Z")
+    today = Job("Acme", "3", "ML Engineer", "https://x/3", location="Austin, TX", posted=now()[:19] + "Z")
+    undated = Job("Acme", "4", "ML Engineer", "https://x/4", location="Austin, TX")
+    boards.jobs["acme"] = [j(1), reopened, today, undated]
+    assert sorted(x.id for x in cycle(cfg).new) == ["3", "4"]
+
+
 def test_filtered_out_postings_stay_known_when_filters_change(setup):
     boards, cfg = setup
     boards.jobs["acme"] = [j(1)]
@@ -156,6 +168,16 @@ def test_load_config(tmp_path):
     assert cfg.companies == [Company("Acme", "greenhouse", "acme")]
     assert cfg.state_file == str(tmp_path / "state" / "seen.json")
     assert cfg.filters.us_only is False
+
+
+def test_companies_can_come_from_several_files(tmp_path):
+    (tmp_path / "config.toml").write_text('[settings]\ncompanies_file = ["a.toml", "b.toml"]\n')
+    (tmp_path / "a.toml").write_text('[[company]]\nname="A"\nats="lever"\nslug="a"\n')
+    (tmp_path / "b.toml").write_text('[[company]]\nname="B"\nats="ashby"\nslug="b"\n')
+    assert [c.name for c in load_config(str(tmp_path / "config.toml")).companies] == ["A", "B"]
+    (tmp_path / "b.toml").write_text('[[company]]\nname="A again"\nats="lever"\nslug="a"\n')
+    with pytest.raises(ValueError, match="listed twice"):  # duplicates across files are caught too
+        load_config(str(tmp_path / "config.toml"))
 
 
 def test_config_rejects_unknown_ats_and_duplicates(tmp_path):

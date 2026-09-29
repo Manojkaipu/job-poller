@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import os
 import sys
 
@@ -39,13 +40,15 @@ def cmd_run(args) -> int:
 def cmd_list(args) -> int:
     cfg = load_config(args.config)
     companies = [c for c in cfg.companies if not args.company or args.company.lower() in c.name.lower()]
-    jobs = []
+    jobs, started = [], dt.datetime.now(dt.timezone.utc)
     for f in fetch_all(companies, cfg.workers):
         if f.error:
             print(f"! {f.company.name}: {f.error}", file=sys.stderr)
-        jobs += [j for j in f.jobs if args.all or cfg.filters.match(j)]
+        jobs += [j for j in f.jobs if (args.all or cfg.filters.match(j))
+                 and (not args.fresh or (j.posted and cfg.filters.fresh(j, started)))]
     print_jobs(jobs)
-    print(f"\n{len(jobs)} posting(s)" + ("" if args.all else " matching the filters"))
+    print(f"\n{len(jobs)} posting(s)" + ("" if args.all else " matching the filters")
+          + (f", posted in the last {cfg.filters.max_age_hours:g}h" if args.fresh else ""))
     return 0
 
 
@@ -102,6 +105,7 @@ def main(argv=None) -> int:
     ls = sub.add_parser("list", help="show postings that match the filters right now (ignores state)")
     ls.add_argument("--company", help="substring of a company name")
     ls.add_argument("--all", action="store_true", help="ignore the filters")
+    ls.add_argument("--fresh", action="store_true", help="only postings dated within max_age_hours")
     ls.set_defaults(fn=cmd_list)
 
     sub.add_parser("check", help="fetch every board and report counts and errors").set_defaults(fn=cmd_check)

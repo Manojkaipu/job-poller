@@ -6,6 +6,7 @@ The US check has to read many formats: "US, CA, Santa Clara", "New York City, NY
 """
 from __future__ import annotations
 
+import datetime as dt
 import re
 from dataclasses import dataclass, field
 
@@ -87,6 +88,9 @@ class Filters:
     us_only: bool = True
     extra_locations: list[str] = field(default_factory=list)  # also accepted, e.g. "Toronto"
     allow_unknown_location: bool = True
+    # Drop postings the board says were posted longer ago than this (0 = no limit). Boards
+    # that give no date can't be checked; for them, first seen by the poller is the proxy.
+    max_age_hours: float = 0
 
     def __post_init__(self):
         self._inc, self._exc = _terms(self.include), _terms(self.exclude)
@@ -113,6 +117,14 @@ class Filters:
         # "Remote" with no country attached counts; "Remote - EMEA" or "Remote (Canada)" doesn't.
         remote = job.remote or _REMOTE.search(loc)
         return bool(remote and not _NON_US.search(loc))
+
+    def fresh(self, job: Job, now: dt.datetime) -> bool:
+        if not self.max_age_hours or not job.posted:
+            return True
+        cutoff = now - dt.timedelta(hours=self.max_age_hours)
+        if len(job.posted) == 10:  # date only: keep anything dated on or after the cutoff's day
+            return job.posted >= cutoff.date().isoformat()
+        return job.posted >= cutoff.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def match(self, job: Job) -> bool:
         return self.title_ok(job.title) and self.location_ok(job)
