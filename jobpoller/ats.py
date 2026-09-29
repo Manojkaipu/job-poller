@@ -329,7 +329,7 @@ def workday(slug: str, company: str, search: tuple[str, ...] = ()) -> list[Job]:
                 if "externalPath" in j and j.get("title") and j["externalPath"] not in out:  # some have no title
                     out[j["externalPath"]] = Job(company, j["externalPath"], j["title"].strip(),
                                                  f"https://{host}/{site}{j['externalPath']}",
-                                                 location=j.get("locationsText", ""),
+                                                 location=_workday_location(j),
                                                  posted=_workday_posted(j.get("postedOn")))
     return list(out.values())
 
@@ -428,6 +428,17 @@ def oracle(slug: str, company: str) -> list[Job]:
         offset += len(reqs)
         if not reqs or offset >= item.get("TotalJobsCount", 0):
             return out
+
+
+def _workday_location(j: dict) -> str:
+    """Workday shows multi-city postings as just "2 Locations"; the primary one is in the job's
+    path, e.g. /job/India-Gurugram/... or /job/US-CA-Santa-Clara/..."""
+    text = j.get("locationsText", "")
+    m = re.fullmatch(r"(\d+) Locations?", text.strip())
+    seg = re.match(r"/job/([^/]+)/", j.get("externalPath", ""))
+    if m and seg:
+        return f"{seg.group(1).replace('-', ' ')} (+{int(m.group(1)) - 1} more)"
+    return text
 
 
 def _workday_parts(slug: str) -> tuple[str, str]:

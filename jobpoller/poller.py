@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 from .ats import FETCHERS, Job, Partial
-from .filters import Filters
+from .filters import Filters, us_display
 from .http import FetchError
 from .notify import posted_label
 from .state import BoardResult, State, now
@@ -164,5 +164,5 @@ def summarize(report: RunReport, log=print) -> None:
 
 def print_jobs(jobs: list[Job], out=sys.stdout) -> None:
     for j in sorted(jobs, key=lambda j: (j.company.lower(), j.title.lower())):
-        extra = " · ".join(x for x in (j.location, "remote" if j.remote else "", posted_label(j)) if x)
+        extra = " · ".join(x for x in (us_display(j.location), "remote" if j.remote else "", posted_label(j)) if x)
         print(f"{j.company:22} {j.title}\n{'':22} {extra}\n{'':22} {j.url}", file=out)

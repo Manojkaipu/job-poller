@@ -18,6 +18,7 @@ from collections import defaultdict
 from email.message import EmailMessage
 
 from .ats import Job
+from .filters import us_display
 
 
 def load_dotenv(path: str = ".env") -> None:
@@ -57,7 +58,7 @@ def posted_label(job: Job, now: dt.datetime | None = None) -> str:
 
 
 def _meta(job: Job) -> list[str]:
-    return [x for x in (job.location, "remote" if job.remote else "", posted_label(job)) if x]
+    return [x for x in (us_display(job.location), "remote" if job.remote else "", posted_label(job)) if x]
 
 
 def _by_company(jobs: list[Job]) -> dict[str, list[Job]]:

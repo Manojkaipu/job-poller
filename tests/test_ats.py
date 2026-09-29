@@ -230,6 +230,15 @@ def test_workday_search_terms_are_merged(monkeypatch):
     assert [j.id for j in jobs] == ["/job/a", "/job/b", "/job/c"]
 
 
+@pytest.mark.parametrize("text,path,expected", [
+    ("2 Locations", "/job/India-Gurugram/SAP-Engineer_JR2026497", "India Gurugram (+1 more)"),  # emailed once
+    ("3 Locations", "/job/US-CA-Santa-Clara/ML-Engineer_JR1", "US CA Santa Clara (+2 more)"),
+    ("US, CA, Santa Clara", "/job/US-CA-Santa-Clara/ML-Engineer_JR1", "US, CA, Santa Clara"),
+])
+def test_workday_multi_location_uses_primary_from_path(text, path, expected):
+    assert ats._workday_location({"locationsText": text, "externalPath": path}) == expected
+
+
 def test_workday_skips_postings_without_a_title(monkeypatch):
     item = load("workday")[0]
     untitled = {k: v for k, v in item.items() if k != "title"}  # seen on Workday's own board

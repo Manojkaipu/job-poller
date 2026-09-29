@@ -78,6 +78,16 @@ def is_us(place: str) -> bool:
                 or _STATE_CODE.search(place) or _CITY.search(place))
 
 
+def us_display(location: str) -> str:
+    """The US places of a multi-country posting, e.g. "San Francisco, CA (+2 outside the US)"."""
+    places = [p.strip() for p in _SPLIT.split(location) if p.strip()]
+    us = list(dict.fromkeys(p for p in places if is_us(p)))
+    if not us or len(us) == len(places):
+        return location
+    others = len([p for p in places if not is_us(p)])
+    return " | ".join(us) + f" (+{others} outside the US)"
+
+
 @dataclass
 class Filters:
     include: list[str] = field(default_factory=list)
@@ -114,9 +124,11 @@ class Filters:
         places = [p for p in _SPLIT.split(loc) if p.strip()]
         if any(is_us(p) for p in places):
             return True
-        # "Remote" with no country attached counts; "Remote - EMEA" or "Remote (Canada)" doesn't.
+        # Plain "Remote" counts. Remote plus any place that isn't the US ("Remote - EMEA",
+        # "Remote, Global", or a remote-flagged "Kosovo") doesn't.
         remote = job.remote or _REMOTE.search(loc)
-        return bool(remote and not _NON_US.search(loc))
+        leftover = _WORKPLACE_ONLY.sub(" ", _REMOTE.sub(" ", loc)).strip(" |,;-()/:")
+        return bool(remote and not leftover)
 
     def fresh(self, job: Job, now: dt.datetime) -> bool:
         if not self.max_age_hours or not job.posted:

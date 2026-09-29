@@ -70,9 +70,35 @@ def test_non_us_places(place):
     ("2 Locations", None, True),                        # Workday's summary for multi-city postings
     ("Paris, France", True, False),                     # remote, but in France
     ("Anywhere", None, True),
+    # remote-flagged or "Remote" plus a place that isn't recognizably US: all seen in real matches
+    ("Kosovo", True, False),
+    ("Curitiba", True, False),
+    ("Remote, Global", None, False),
+    ("Remote - Ukraine | Ukraine, Ukraine", None, False),
+    ("IN - Remote - IND", None, False),
+    ("Remote ", None, True),
+    ("Remote - US", None, True),
 ])
 def test_location_filter(location, remote, ok):
     assert F.location_ok(job(location=location, remote=remote)) is ok
+
+
+@pytest.mark.parametrize("location,shown", [
+    ("London, UK; Ontario, CAN; Remote-Friendly, United States; San Francisco, CA",
+     "Remote-Friendly, United States | San Francisco, CA (+2 outside the US)"),
+    ("San Francisco, CA | New York City, NY", "San Francisco, CA | New York City, NY"),  # all US: unchanged
+    ("Paris, France", "Paris, France"),                                                # no US: unchanged
+])
+def test_us_display(location, shown):
+    from jobpoller.filters import us_display
+    assert us_display(location) == shown
+
+
+@pytest.mark.parametrize("location", ["India Gurugram (+1 more)", "Hybrid", ""])
+def test_us_only_without_unknowns(location):
+    f = Filters(allow_unknown_location=False)
+    assert not f.location_ok(job(location=location))
+    assert f.location_ok(job(location="US CA Santa Clara (+2 more)"))
 
 
 def test_unknown_location_can_be_dropped():

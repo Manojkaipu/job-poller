@@ -29,7 +29,7 @@ exclude = [
 protect = ["member of technical staff"]
 us_only = true                 # keep US and unspecified-remote postings
 extra_locations = []           # also keep these places, e.g. ["Toronto"]
-allow_unknown_location = true  # keep postings that give no location at all
+allow_unknown_location = false # drop postings that don't say where they are
 # Only alert on postings the board says went up within this many hours (0 = no limit).
 # Boards that don't publish a date are judged by when the poller first saw the posting.
 max_age_hours = 24

@@ -72,9 +72,14 @@ def cmd_test_email(args) -> int:
         print("email not configured: set SMTP_USER and SMTP_PASSWORD in .env")
         return 1
     cfg = load_config(args.config)
-    sample = [c for c in cfg.companies if c.ats in ("greenhouse", "ashby")][:10]  # fast boards only
-    jobs = [j for f in fetch_all(sample, cfg.workers) for j in f.jobs if cfg.filters.match(j)][:5]
-    notify.send(jobs, [], subject_line=f"Job poller test: {len(jobs)} postings that match your filters right now")
+    # A sample of what a real alert looks like: matching postings from the last max_age_hours,
+    # taken from fast boards. (Not ones the poller hasn't seen; that's what `run` sends.)
+    sample = [c for c in cfg.companies if c.ats in ("greenhouse", "ashby")][:80]
+    now = dt.datetime.now(dt.timezone.utc)
+    jobs = [j for f in fetch_all(sample, cfg.workers) for j in f.jobs
+            if cfg.filters.match(j) and j.posted and cfg.filters.fresh(j, now)][:5]
+    notify.send(jobs, [], subject_line=f"Job poller test: {len(jobs)} matching postings from the last "
+                                       f"{cfg.filters.max_age_hours:g}h (a sample, not new alerts)")
     print(f"sent a test email with {len(jobs)} postings to {os.environ.get('MAIL_TO') or os.environ['SMTP_USER']}")
     return 0
 
