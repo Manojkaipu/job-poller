@@ -61,7 +61,7 @@ MAIL_TO=you@gmail.com               # optional, comma-separated
 # SMTP_HOST=smtp.gmail.com  SMTP_PORT=465  (defaults; port 587 uses STARTTLS)
 ```
 
-Without SMTP settings, new postings are just printed.
+Without SMTP settings, new postings are just printed. `python -m jobpoller test-email` sends a sample with a few postings that match right now, to check the settings.
 
 ## Use
 

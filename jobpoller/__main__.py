@@ -64,6 +64,18 @@ def cmd_check(args) -> int:
     return 1 if bad else 0
 
 
+def cmd_test_email(args) -> int:
+    if not notify.email_configured():
+        print("email not configured: set SMTP_USER and SMTP_PASSWORD in .env")
+        return 1
+    cfg = load_config(args.config)
+    sample = [c for c in cfg.companies if c.ats in ("greenhouse", "ashby")][:10]  # fast boards only
+    jobs = [j for f in fetch_all(sample, cfg.workers) for j in f.jobs if cfg.filters.match(j)][:5]
+    notify.send(jobs, [], subject_line=f"Job poller test: {len(jobs)} postings that match your filters right now")
+    print(f"sent a test email with {len(jobs)} postings to {os.environ.get('MAIL_TO') or os.environ['SMTP_USER']}")
+    return 0
+
+
 def cmd_discover(args) -> int:
     for name in args.names:
         hits = discover(name, args.slug or [])
@@ -93,6 +105,7 @@ def main(argv=None) -> int:
     ls.set_defaults(fn=cmd_list)
 
     sub.add_parser("check", help="fetch every board and report counts and errors").set_defaults(fn=cmd_check)
+    sub.add_parser("test-email", help="send a sample email to check the SMTP settings").set_defaults(fn=cmd_test_email)
 
     d = sub.add_parser("discover", help="find which ATS a company uses")
     d.add_argument("names", nargs="+")

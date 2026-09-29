@@ -77,15 +77,17 @@ def render_html(new: list[Job], problems: list[str]) -> str:
     return "".join(parts)
 
 
-def send(new: list[Job], problems: list[str]) -> None:
+def send(new: list[Job], problems: list[str], subject_line: str | None = None) -> None:
     env = lambda k, default=None: os.environ.get(k) or default  # CI passes unset secrets as ""
     user, password = env("SMTP_USER"), env("SMTP_PASSWORD")
     host = env("SMTP_HOST", "smtp.gmail.com")
     port = int(env("SMTP_PORT", "465"))
     to = [a.strip() for a in env("MAIL_TO", user).split(",") if a.strip()]
+    if host == "smtp.gmail.com":
+        password = password.replace(" ", "")  # Google shows app passwords as "abcd efgh ijkl mnop"
 
     msg = EmailMessage()
-    msg["Subject"] = subject(new) if new else f"Job poller: {len(problems)} board(s) need attention"
+    msg["Subject"] = subject_line or (subject(new) if new else f"Job poller: {len(problems)} board(s) need attention")
     msg["From"] = env("MAIL_FROM", user)
     msg["To"] = ", ".join(to)
     msg.set_content(render_text(new, problems))
