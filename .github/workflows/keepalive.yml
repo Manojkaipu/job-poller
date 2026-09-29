@@ -1,0 +1,21 @@
+name: Keep the schedule alive
+
+# GitHub disables scheduled workflows in a public repo after 60 days without activity, and the
+# poller never commits. Re-enabling the poll workflow each month resets that clock without
+# adding commits.
+on:
+  schedule:
+    - cron: "0 12 1 * *"  # 1st of every month
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Re-enable the poll workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/poll.yml/enable" && echo "poll.yml enabled"
