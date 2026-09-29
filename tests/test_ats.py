@@ -230,6 +230,14 @@ def test_workday_search_terms_are_merged(monkeypatch):
     assert [j.id for j in jobs] == ["/job/a", "/job/b", "/job/c"]
 
 
+def test_workday_skips_postings_without_a_title(monkeypatch):
+    item = load("workday")[0]
+    untitled = {k: v for k, v in item.items() if k != "title"}  # seen on Workday's own board
+    monkeypatch.setattr(ats, "post_json", lambda url, body, **kw: {"total": 2, "jobPostings": [
+        untitled, {**item, "externalPath": "/job/ok"}]})
+    assert [j.id for j in ats.workday("workday.wd5.myworkdayjobs.com/Workday", "Workday")] == ["/job/ok"]
+
+
 def test_ukg(monkeypatch):
     opp = {"Id": "4a96a59c", "Title": "Data Scientist ", "PostedDate": "2026-09-24T17:17:22.405Z", "JobCategoryName": "Data",
            "Locations": [{"LocalizedDescription": "General Remote - USA",

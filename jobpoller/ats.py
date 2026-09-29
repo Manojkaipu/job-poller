@@ -326,7 +326,7 @@ def workday(slug: str, company: str, search: tuple[str, ...] = ()) -> list[Job]:
         _check_size(total, slug)
         for p in _paged(first, total, 20, page):
             for j in p.get("jobPostings") or []:
-                if "externalPath" in j and j["externalPath"] not in out:
+                if "externalPath" in j and j.get("title") and j["externalPath"] not in out:  # some have no title
                     out[j["externalPath"]] = Job(company, j["externalPath"], j["title"].strip(),
                                                  f"https://{host}/{site}{j['externalPath']}",
                                                  location=j.get("locationsText", ""),
