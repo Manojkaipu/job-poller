@@ -113,7 +113,15 @@ Changing a board's `search` changes which postings it returns, so expect one run
 
 ## Scheduling
 
-**GitHub Actions** (recommended, since it runs when the laptop is asleep): `.github/workflows/poll.yml` runs every 15 minutes, so a posting reaches your inbox within about 15-30 minutes of going up (GitHub starts scheduled runs late when it's busy). Public repos get unlimited Actions minutes; a private repo's free 2,000 minutes a month would only cover an hourly schedule. Add `SMTP_USER`, `SMTP_PASSWORD` and optionally `MAIL_TO` as repository secrets. The state file is kept in the Actions cache, not committed, so the repo doesn't grow a commit per run. GitHub pauses scheduled workflows in a public repo with no activity for 60 days, and the poller never commits, so `keepalive.yml` re-enables the poll workflow on the 1st of each month.
+**GitHub Actions** (recommended, since it runs when the laptop is asleep) runs `.github/workflows/poll.yml`. GitHub's own cron is best-effort: for this repo it never started at all in the first five hours. So the real trigger is [cron-job.org](https://cron-job.org), which calls the workflow's `workflow_dispatch` endpoint on a fixed schedule:
+
+* URL `https://api.github.com/repos/<owner>/job-poller/actions/workflows/poll.yml/dispatches`, method `POST`, body `{"ref":"main"}`
+* headers `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`, `Content-Type: application/json`
+* the token is a fine-grained personal access token limited to this repository with only **Actions: read and write**
+
+A run takes about 2 minutes, so the interval only trades alert delay against load: hourly means ~12-15 emails a day and about 29,000 board requests. The workflow's own cron (every 2 hours) stays as a backup; overlapping triggers queue behind each other and share the state, so nothing is emailed twice. Public repos get unlimited Actions minutes.
+
+Add `SMTP_USER`, `SMTP_PASSWORD` and optionally `MAIL_TO` as repository secrets. The state file is kept in the Actions cache, not committed, so the repo doesn't grow a commit per run. GitHub pauses scheduled workflows in a public repo with no activity for 60 days, and the poller never commits, so `keepalive.yml` re-enables the poll workflow on the 1st of each month.
 
 **Windows Task Scheduler**, if you'd rather run it locally:
 
