@@ -359,8 +359,8 @@ slug = "airbyte"
 
 [[company]]
 name = "Hex"
-ats = "greenhouse"
-slug = "hextechnologies"
+ats = "ashby"
+slug = "hex"
 
 [[company]]
 name = "ClickHouse"
@@ -870,3 +870,182 @@ slug = "explore.jobs.netflix.net/netflix.com"
 name = "Qualcomm"
 ats = "eightfold"
 slug = "careers.qualcomm.com/qualcomm.com"
+
+# --- Semiconductors (SIA members, semiconductors.org/about/members) ----------
+# Intel, NVIDIA, Microchip, onsemi and Qualcomm are above. See the README for the members
+# that couldn't be added.
+
+[[company]]
+name = "Altera"
+ats = "workday"
+slug = "altera.wd1.myworkdayjobs.com/Altera"
+
+[[company]]
+name = "AMD"
+ats = "jibe"
+slug = "careers.amd.com/careers-home"
+
+[[company]]
+name = "Analog Devices"
+ats = "workday"
+slug = "analogdevices.wd1.myworkdayjobs.com/External"
+
+[[company]]
+name = "Broadcom"
+ats = "workday"
+slug = "broadcom.wd1.myworkdayjobs.com/External_Career"
+
+[[company]]
+name = "GlobalFoundries"
+ats = "workday"
+slug = "globalfoundries.wd1.myworkdayjobs.com/External"
+
+[[company]]
+name = "Lattice Semiconductor"
+ats = "workday"
+slug = "latticesemi.wd5.myworkdayjobs.com/latticesemiconductorscareers"
+
+[[company]]
+name = "Marvell"
+ats = "workday"
+slug = "marvell.wd1.myworkdayjobs.com/MarvellCareers"
+
+[[company]]
+name = "Micron"
+ats = "workday"
+slug = "micron.wd1.myworkdayjobs.com/External"
+
+[[company]]
+name = "Qorvo"
+ats = "successfactors"
+slug = "careers.qorvo.com"
+
+[[company]]
+name = "Silicon Labs"
+ats = "workday"
+slug = "silabs.wd1.myworkdayjobs.com/SiliconLabsCareers"
+
+[[company]]
+name = "Skyworks"
+ats = "successfactors"
+slug = "careers.skyworksinc.com"
+
+[[company]]
+name = "Tenstorrent"
+ats = "greenhouse"
+slug = "tenstorrent"
+
+[[company]]
+name = "Texas Instruments"
+ats = "oracle"
+slug = "edbz.fa.us2.oraclecloud.com/CX"
+
+[[company]]
+name = "Wolfspeed"
+ats = "workday"
+slug = "cree.wd108.myworkdayjobs.com/EXT"
+
+[[company]]
+name = "Infineon"
+ats = "eightfold"
+slug = "infineon.eightfold.ai/infineon.com"
+
+[[company]]
+name = "NXP"
+ats = "workday"
+slug = "nxp.wd3.myworkdayjobs.com/careers"
+
+[[company]]
+name = "Polar Semiconductor"
+ats = "workday"
+slug = "polarsemi.wd501.myworkdayjobs.com/Polar"
+
+[[company]]
+name = "Samsung Semiconductor"
+ats = "workday"
+slug = "sec.wd3.myworkdayjobs.com/Samsung_Careers"
+
+[[company]]
+name = "Solidigm"
+ats = "smartrecruiters"
+slug = "solidigm"
+
+[[company]]
+name = "Arrow Electronics"
+ats = "workday"
+slug = "arrow.wd1.myworkdayjobs.com/AC"
+
+[[company]]
+name = "ASM"
+ats = "greenhouse"
+slug = "asm"
+
+[[company]]
+name = "Avnet"
+ats = "workday"
+slug = "avnet.wd1.myworkdayjobs.com/External"
+
+[[company]]
+name = "Cadence"
+ats = "workday"
+slug = "cadence.wd1.myworkdayjobs.com/External_Careers"
+
+[[company]]
+name = "Emerson"
+ats = "oracle"
+slug = "hdjq.fa.us2.oraclecloud.com/CX_1"
+
+[[company]]
+name = "Hemlock Semiconductor"
+ats = "successfactors"
+slug = "careers.hscpoly.com"
+
+[[company]]
+name = "Keysight"
+ats = "jibe"
+slug = "jobs.keysight.com/external"
+
+[[company]]
+name = "KLA"
+ats = "workday"
+slug = "kla.wd1.myworkdayjobs.com/Search"
+
+[[company]]
+name = "Lam Research"
+ats = "eightfold"
+slug = "lamresearch.eightfold.ai/lamresearch.com"
+
+[[company]]
+name = "Mouser Electronics"
+ats = "oracle"
+slug = "eabw.fa.us2.oraclecloud.com/CX_1"
+
+[[company]]
+name = "Nokia"
+ats = "oracle"
+slug = "fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/CX_1"
+
+[[company]]
+name = "Onto Innovation"
+ats = "workday"
+slug = "onto.wd1.myworkdayjobs.com/Onto_Careers"
+
+[[company]]
+name = "SiFive"
+ats = "workday"
+slug = "sifive.wd1.myworkdayjobs.com/sifivecareers"
+
+[[company]]
+name = "Solstice Advanced Materials"
+ats = "oracle"
+slug = "ibzdjb.fa.ocs.oraclecloud.com/SolsticeAdvancedMaterials"
+
+[[company]]
+name = "Teradyne"
+ats = "successfactors"
+slug = "jobs.teradyne.com"
+
+[[company]]
+name = "Veeco"
+ats = "successfactors"
+slug = "careers.veeco.com"

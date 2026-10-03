@@ -509,8 +509,8 @@ slug = "coperniq"
 
 [[company]]  # YC Summer 2024, Fintech
 name = "Corgi Insurance"
-ats = "ashby"
-slug = "corgi"
+ats = "yc"
+slug = "corgi-insurance"  # its Ashby board is empty; it posts on Work at a Startup
 
 [[company]]  # YC Winter 2023, B2B
 name = "Cosine"
@@ -844,8 +844,8 @@ slug = "goveagle"
 
 [[company]]  # YC Winter 2021, B2B
 name = "Great Question"
-ats = "ashby"
-slug = "greatquestion"
+ats = "yc"
+slug = "great-question"  # its Ashby board is empty; it posts on Work at a Startup
 
 [[company]]  # YC Winter 2024, Fintech
 name = "Greenboard"
@@ -1259,8 +1259,8 @@ slug = "nango"
 
 [[company]]  # YC Winter 2017, B2B
 name = "NanoNets"
-ats = "ashby"
-slug = "nanonets"
+ats = "yc"
+slug = "nanonets"  # its Ashby board is empty; it posts on Work at a Startup
 
 [[company]]  # YC Summer 2021, B2B
 name = "Nash"
@@ -1624,8 +1624,8 @@ slug = "relace"
 
 [[company]]  # YC Winter 2022, Real Estate and Construction
 name = "Remi"
-ats = "greenhouse"
-slug = "remi"
+ats = "yc"
+slug = "remi"  # its Greenhouse board is empty; it posts on Work at a Startup
 
 [[company]]  # YC Summer 2021, B2B
 name = "Replo"

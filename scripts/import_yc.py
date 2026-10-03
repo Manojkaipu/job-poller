@@ -23,6 +23,7 @@ from concurrent.futures import ThreadPoolExecutor
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from jobpoller import http  # noqa: E402
+from jobpoller.ats import FETCHERS  # noqa: E402
 from jobpoller.discover import slug_candidates  # noqa: E402
 
 YC_HIRING = "https://yc-oss.github.io/api/companies/hiring.json"
@@ -71,6 +72,9 @@ def try_board(c: dict, ats: str, slug: str) -> dict | None:
     return {"ats": ats, "slug": slug, "count": len(jobs), "verified": belongs(c, text)} if jobs else None
 
 
+PREVIOUS: set[str] = set()  # names already in the output file, filled in by main()
+
+
 def find(c: dict) -> dict | None:
     slugs = list(dict.fromkeys([c["slug"], *slug_candidates(c["name"]), domain(c)]))
     first = None
@@ -80,6 +84,16 @@ def find(c: dict) -> dict | None:
             if hit and hit["verified"]:
                 return {**hit, "name": c["name"], "batch": c.get("batch"), "industry": c.get("industry")}
             first = first or (hit and {**hit, "name": c["name"]})
+    # A company that was listed but whose board has emptied has usually moved to YC's own Work
+    # at a Startup (Corgi, Remi). Only for those: polling YC pages for every company is too much.
+    if norm(c["name"]) in PREVIOUS:
+        try:
+            jobs = FETCHERS["yc"](c["slug"], c["name"])
+        except Exception:  # noqa: BLE001
+            jobs = []
+        if jobs:
+            return {"ats": "yc", "slug": c["slug"], "count": len(jobs), "verified": True, "name": c["name"],
+                    "batch": c.get("batch"), "industry": c.get("industry")}
     return first
 
 
@@ -99,10 +113,16 @@ def main() -> int:
     ap.add_argument("--out", default=os.path.join(ROOT, "companies_yc.toml"))
     args = ap.parse_args()
 
+    if os.path.exists(args.out):
+        with open(args.out, "rb") as f:
+            PREVIOUS.update(norm(c["name"]) for c in tomllib.load(f).get("company", []))
     hits = json.load(open(args.found)) if args.found else discover()
-    with open(os.path.join(ROOT, "companies.toml"), "rb") as f:
-        curated = tomllib.load(f).get("company", [])
-    taken = {(c["ats"], c["slug"].lower()) for c in curated} | {norm(c["name"]) for c in curated}
+    curated = []
+    for name in ("companies.toml", "companies_gallery.toml"):  # a board listed twice stops the poller
+        if os.path.exists(os.path.join(ROOT, name)):
+            with open(os.path.join(ROOT, name), "rb") as f:
+                curated += tomllib.load(f).get("company", [])
+    taken ={(c["ats"], c["slug"].lower()) for c in curated} | {norm(c["name"]) for c in curated}
 
     keep, skipped = [], {"unverified": 0, "already listed": 0}
     for h in sorted(hits, key=lambda h: h["name"].lower()):

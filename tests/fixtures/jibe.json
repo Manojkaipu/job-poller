@@ -1,0 +1,49 @@
+{
+ "jobs": [
+  {
+   "data": {
+    "slug": "53640",
+    "title": "R&D Software Engineering Manager",
+    "city": "Santa Rosa",
+    "state": "California",
+    "country": "United States",
+    "full_location": "Santa Rosa, California; Loveland, Colorado",
+    "additional_locations": [
+     {
+      "location_name": "US-CO-Loveland-Bldg E",
+      "street_address": "900 South Taft Avenue",
+      "city": "Loveland",
+      "state": "Colorado",
+      "country": "United States",
+      "country_code": "US",
+      "postal_code": "80537-6378",
+      "latitude": 40.39776,
+      "longitude": -105.07498
+     }
+    ],
+    "multipleLocations": true,
+    "posted_date": "2026-10-02T20:55:00+0000",
+    "category": [
+     " R&D"
+    ]
+   }
+  },
+  {
+   "data": {
+    "slug": "54388",
+    "title": "R&D Software Engineering, Intern",
+    "city": "Atlanta",
+    "state": "Georgia",
+    "country": "United States",
+    "full_location": "Atlanta, Georgia",
+    "additional_locations": null,
+    "multipleLocations": false,
+    "posted_date": "2026-10-02T20:39:00+0000",
+    "category": [
+     " R&D"
+    ]
+   }
+  }
+ ],
+ "totalCount": 2
+}

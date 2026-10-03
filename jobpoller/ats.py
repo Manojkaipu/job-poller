@@ -1,12 +1,16 @@
 """One fetcher per ATS. Each takes the company's board slug and returns every open posting as a Job.
 
 All endpoints here are the public, unauthenticated ones the boards themselves use to render
-careers pages. Nothing is scraped from HTML.
+careers pages. Nothing is scraped from HTML; the one page read (YC's) carries its postings as
+JSON in an attribute.
 """
 from __future__ import annotations
 
 import datetime as dt
+import html
+import json
 import re
+import threading
 import time
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
@@ -294,11 +298,46 @@ def _rfc822_date(s: str | None) -> str | None:
         return None
 
 
+def yc(slug: str, company: str) -> list[Job]:
+    """Y Combinator's Work at a Startup, for YC companies that post nowhere else. slug is the
+    company's YC directory slug, as in ycombinator.com/companies/{slug}/jobs. The page is an
+    Inertia app: every posting is in the JSON of its data-page attribute."""
+    page = get_text(f"https://www.ycombinator.com/companies/{quote(slug)}/jobs", accept="text/html")
+    m = re.search(r'data-page="([^"]+)"', page)
+    if not m:
+        raise FetchError(f"no data-page JSON on the YC page for {slug}; did the layout change?")
+    data = json.loads(html.unescape(m.group(1)))
+    return [Job(company, str(j["id"]), j["title"].strip(), f"https://www.ycombinator.com{j['url']}",
+                location=_join(*(j.get("location") or "").split(" / ")),
+                remote=bool(_YC_REMOTE.search(j.get("location") or "")) or None,
+                posted=_yc_posted(j.get("createdAt")), department=j.get("prettyRole"))
+            for j in (data.get("props") or {}).get("jobPostings") or [] if j.get("title")]
+
+
+_YC_REMOTE = re.compile(r"\bremote\b", re.I)
+_YC_UNITS = {"minute": dt.timedelta(minutes=1), "hour": dt.timedelta(hours=1), "day": dt.timedelta(days=1),
+             "month": dt.timedelta(days=30), "year": dt.timedelta(days=365)}
+
+
+def _yc_posted(text: str | None, now: dt.datetime | None = None) -> str | None:
+    """YC gives only Rails' "less than a minute", "about 23 hours", "3 days", "about 1 month"
+    (ago). Minutes and hours become a UTC time; days and longer only a date."""
+    now = now or dt.datetime.now(dt.timezone.utc)
+    t = (text or "").lower()
+    if "less than a minute" in t:
+        return _utc(now)
+    m = re.search(r"(\d+)\s+(minute|hour|day|month|year)s?", t)
+    if not m:
+        return None
+    ago = now - int(m.group(1)) * _YC_UNITS[m.group(2)]
+    return _utc(ago) if m.group(2) in ("minute", "hour") else ago.date().isoformat()
+
+
 # --- enterprise, for the few large companies worth watching --------------------------------
 
 PAGE_WORKERS = 4  # concurrent page requests within one board, for boards stuck at 10-20 per page
 EIGHTFOLD_PAGES = 20  # newest 200 postings; new ones land at the top, so 4 hours never fills this
-EIGHTFOLD_DELAY = 4.0  # seconds between Eightfold pages, under its ~20 requests/minute limit
+EIGHTFOLD_DELAY = 4.0  # seconds between Eightfold requests (all boards together), under its ~20/minute limit
 
 
 def _paged(first: dict, total: int, page_size: int, fetch_page, workers: int = PAGE_WORKERS) -> list[dict]:
@@ -376,8 +415,7 @@ def eightfold(slug: str, company: str) -> list[Job]:
 
     def paced(url):
         def page(start):
-            if start:
-                time.sleep(EIGHTFOLD_DELAY)
+            _eightfold_turn()
             return get_json(url.format(start=start))
         return page
 
@@ -405,6 +443,22 @@ def eightfold(slug: str, company: str) -> list[Job]:
     return out
 
 
+_eightfold_lock = threading.Lock()
+_eightfold_next = 0.0
+
+
+def _eightfold_turn() -> None:
+    """Wait for this request's slot. Eightfold's limit is per client across all its customers'
+    sites (Netflix, Qualcomm, Lam and Infineon in parallel got 429s), so every Eightfold
+    request in the run shares one EIGHTFOLD_DELAY spacing."""
+    global _eightfold_next
+    with _eightfold_lock:
+        now = time.monotonic()
+        wait = max(0.0, _eightfold_next - now)
+        _eightfold_next = max(now, _eightfold_next) + EIGHTFOLD_DELAY
+    time.sleep(wait)
+
+
 def oracle(slug: str, company: str) -> list[Job]:
     """Oracle Recruiting Cloud. slug is "host/siteNumber", e.g. ibqbjb.fa.ocs.oraclecloud.com/CX_1
     (the site number is in the careers page URL or source)."""
@@ -428,6 +482,54 @@ def oracle(slug: str, company: str) -> list[Job]:
         offset += len(reqs)
         if not reqs or offset >= item.get("TotalJobsCount", 0):
             return out
+
+
+def jibe(slug: str, company: str) -> list[Job]:
+    """Jibe (iCIMS Talent Cloud) careers sites. slug is the site host and the path its job pages
+    live under, e.g. careers.amd.com/careers-home for careers.amd.com/careers-home/jobs/93267."""
+    host, _, prefix = slug.partition("/")
+    if not prefix:
+        raise FetchError(f"jibe slug should look like host/path, e.g. careers.amd.com/careers-home, got {slug!r}")
+    page = lambda n: get_json(f"https://{host}/api/jobs?page={n // 100 + 1}&limit=100&sortBy=posted_date&descending=true")
+    first = page(0)
+    total = first.get("totalCount") or 0
+    _check_size(total, slug)
+    out = []
+    for p in _paged(first, total, 100, page):
+        for j in (x["data"] for x in p.get("jobs") or []):
+            extra = j.get("additional_locations") or []
+            places = [_place(l.get("city"), l.get("state"), l.get("country"))
+                      for l in [j, *(extra if isinstance(extra, list) else [extra])]]
+            out.append(Job(company, str(j["slug"]), j["title"].strip(), f"https://{host}/{prefix}/jobs/{j['slug']}",
+                           location=_join(*places) or j.get("full_location", ""),
+                           posted=_date((j.get("posted_date") or "").replace("+0000", "+00:00")),
+                           department=_first(j.get("category"))))
+    return out
+
+
+def _first(x) -> str | None:
+    """A field that's a string on some Jibe sites and a list of strings on others."""
+    x = (x[0] if x else None) if isinstance(x, list) else x
+    return x.strip() or None if isinstance(x, str) else None
+
+
+def successfactors(slug: str, company: str) -> list[Job]:
+    """SAP SuccessFactors career sites (Recruiting Marketing). slug is the site host, e.g.
+    careers.qorvo.com. Its RSS feed lists every posting, newest first, with the location in
+    the title: "Principal Research Scientist (Richardson, TX, US, 75080)"."""
+    root = ET.fromstring(get_text(f"https://{slug}/services/rss/job/?locale=en_US&keywords=&rows={MAX_POSTINGS + 1}",
+                                  accept="application/rss+xml"))
+    items = list(root.iter("item"))
+    _check_size(len(items), slug)
+    out = []
+    for it in items:
+        link = (it.findtext("link") or "").split("?")[0]
+        m = re.match(r"(.*?)\s*\(([^()]*)\)\s*$", (it.findtext("title") or "").strip())
+        title, loc = (m.group(1), m.group(2)) if m else ((it.findtext("title") or "").strip(), "")
+        posted = _rfc822_date(it.findtext("pubDate"))  # midnight Pacific: only the date means anything
+        out.append(Job(company, link.rstrip("/").rsplit("/", 1)[-1], title, link,
+                       location=re.sub(r",\s*\d{5}(?:-\d{4})?$", "", loc), posted=posted and posted[:10]))
+    return out
 
 
 def _workday_location(j: dict) -> str:
@@ -455,7 +557,7 @@ FETCHERS = {
     "smartrecruiters": smartrecruiters, "recruitee": recruitee, "bamboohr": bamboohr,
     "breezy": breezy, "pinpoint": pinpoint, "rippling": rippling, "gem": gem, "dover": dover,
     "manatal": manatal, "teamtailor": teamtailor, "workday": workday, "eightfold": eightfold,
-    "oracle": oracle, "ukg": ukg,
+    "oracle": oracle, "ukg": ukg, "jibe": jibe, "successfactors": successfactors, "yc": yc,
 }
 
 # Public board URL per ATS, for the discovery helper and for humans checking a slug.
@@ -475,6 +577,9 @@ BOARD_URL = {
     "manatal": "https://www.careers-page.com/{slug}",
     "teamtailor": "https://{slug}.teamtailor.com/jobs",
     "workday": "https://{slug}",
+    "jibe": "https://{slug}/jobs",
+    "successfactors": "https://{slug}/search/",
+    "yc": "https://www.ycombinator.com/companies/{slug}/jobs",
 }
 
 

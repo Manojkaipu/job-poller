@@ -171,6 +171,19 @@ def test_eightfold_falls_back_to_pcsx_and_reads_a_partial_window(monkeypatch):
     assert jobs[0].posted == "2026-09-28T00:00:00Z" and jobs[0].department == "Hardware Engineering"
 
 
+def test_eightfold_requests_are_spaced_across_boards(monkeypatch):
+    import threading, time
+    monkeypatch.setattr(ats, "EIGHTFOLD_DELAY", 0.05)
+    monkeypatch.setattr(ats, "_eightfold_next", 0.0)
+    t = time.monotonic()
+    threads = [threading.Thread(target=ats._eightfold_turn) for _ in range(4)]  # four boards at once
+    for th in threads:
+        th.start()
+    for th in threads:
+        th.join()
+    assert time.monotonic() - t >= 0.15  # 4 requests, 3 gaps, however many boards they came from
+
+
 def test_eightfold_other_errors_are_not_swallowed(monkeypatch):
     def fake(url, **kw):
         raise ats.FetchError("HTTP 500", 500)
@@ -308,3 +321,66 @@ def test_teamtailor_rss(monkeypatch):
     assert urls == ["https://acme.teamtailor.com/jobs.rss"]
     assert (j.id, j.title, j.location, j.remote, j.posted, j.department) == (
         "fb63bcb7", "ML Engineer", "Austin, United States", True, "2026-04-23T10:41:59Z", "Eng")
+
+
+def test_jibe_pages_and_joins_locations(monkeypatch):
+    data = load("jibe")
+    urls = []
+
+    def fake(url, **kw):
+        urls.append(url)
+        return {**data, "totalCount": 150}  # two pages of 100
+
+    monkeypatch.setattr(ats, "get_json", fake)
+    jobs = ats.jibe("jobs.keysight.com/external", "Keysight")
+    assert sorted(u.split("page=")[1].split("&")[0] for u in urls) == ["1", "2"]
+    assert urls[0].startswith("https://jobs.keysight.com/api/jobs?") and "sortBy=posted_date" in urls[0]
+    multi, single = jobs[:2]
+    assert multi.url == "https://jobs.keysight.com/external/jobs/53640"
+    assert multi.location == "Santa Rosa, California, United States | Loveland, Colorado, United States"
+    assert (multi.posted, multi.department) == ("2026-10-02T20:55:00Z", "R&D")
+    assert single.location == "Atlanta, Georgia, United States"
+
+
+def test_jibe_rejects_slug_without_path():
+    with pytest.raises(ats.FetchError, match="host/path"):
+        ats.jibe("careers.amd.com", "AMD")
+
+
+def test_successfactors_rss(monkeypatch):
+    urls = []
+    monkeypatch.setattr(ats, "get_text", lambda url, **kw: urls.append(url) or (FIX / "successfactors.xml").read_text("utf-8"))
+    jobs = ats.successfactors("careers.qorvo.com", "Qorvo")
+    assert urls[0].startswith("https://careers.qorvo.com/services/rss/job/?locale=en_US&keywords=&rows=")
+    j = jobs[1]
+    assert (j.id, j.title, j.location, j.posted) == (
+        "1397710500", "Principal Research Scientist -  RF MMIC Design", "Richardson, TX, US", "2026-10-02")
+    assert j.url == "https://careers.qorvo.com/job/Richardson-Principal-Research-Scientist-RF-MMIC-Design-TX-75080/1397710500/"
+
+
+def test_yc_reads_the_page_json(monkeypatch):
+    urls = []
+    monkeypatch.setattr(ats, "get_text", lambda url, **kw: urls.append(url) or (FIX / "yc.html").read_text("utf-8"))
+    jobs = ats.yc("corgi-insurance", "Corgi Insurance")
+    assert urls == ["https://www.ycombinator.com/companies/corgi-insurance/jobs"]
+    j = jobs[1]
+    assert (j.id, j.title, j.location, j.department) == (
+        "113090", "Full Stack Engineer - New Product Line", "New York, NY, US", "Engineering")
+    assert j.url == "https://www.ycombinator.com/companies/corgi-insurance/jobs/MrPadBh-full-stack-engineer-new-product-line"
+    assert jobs[0].location.startswith("Phoenix, AZ, US | Philadelphia, PA, US | ")
+
+
+def test_yc_page_without_data_is_an_error(monkeypatch):
+    monkeypatch.setattr(ats, "get_text", lambda url, **kw: "<html>Just a moment...</html>")
+    with pytest.raises(ats.FetchError, match="data-page"):
+        ats.yc("corgi-insurance", "Corgi Insurance")
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("less than a minute", "2026-10-02T18:00:00Z"), ("5 minutes", "2026-10-02T17:55:00Z"),
+    ("about 23 hours", "2026-10-01T19:00:00Z"), ("1 day", "2026-10-01"), ("3 days", "2026-09-29"),
+    ("about 1 month", "2026-09-02"), ("", None), (None, None),
+])
+def test_yc_posted_text(text, expected):
+    import datetime as dt
+    assert ats._yc_posted(text, now=dt.datetime(2026, 10, 2, 18, 0, tzinfo=dt.timezone.utc)) == expected
