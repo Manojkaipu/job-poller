@@ -172,16 +172,18 @@ def test_eightfold_falls_back_to_pcsx_and_reads_a_partial_window(monkeypatch):
 
 
 def test_eightfold_requests_are_spaced_across_boards(monkeypatch):
-    import threading, time
-    monkeypatch.setattr(ats, "EIGHTFOLD_DELAY", 0.05)
+    import threading
+    waits = []
+    monkeypatch.setattr(ats, "EIGHTFOLD_DELAY", 4.0)
     monkeypatch.setattr(ats, "_eightfold_next", 0.0)
-    t = time.monotonic()
+    monkeypatch.setattr(ats.time, "sleep", waits.append)  # record the wait instead of timing a real sleep
     threads = [threading.Thread(target=ats._eightfold_turn) for _ in range(4)]  # four boards at once
     for th in threads:
         th.start()
     for th in threads:
         th.join()
-    assert time.monotonic() - t >= 0.15  # 4 requests, 3 gaps, however many boards they came from
+    # one shared queue: slots 0, 4, 8 and 12 seconds out, whichever board asked first
+    assert sorted(waits) == pytest.approx([0, 4, 8, 12], abs=0.5)
 
 
 def test_eightfold_other_errors_are_not_swallowed(monkeypatch):
