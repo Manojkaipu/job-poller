@@ -1843,9 +1843,9 @@ ats = "ashby"
 slug = "substrate"
 
 [[company]]  # YC Winter 2023, B2B
-name = "Suger"
+name = "Fours (formerly Suger)"
 ats = "lever"
-slug = "suger"
+slug = "fours"
 
 [[company]]  # YC Spring 2026, B2B
 name = "Superset"
@@ -2068,9 +2068,9 @@ ats = "ashby"
 slug = "weave"
 
 [[company]]  # YC Summer 2018, B2B
-name = "Within"
+name = "Within (now Klarity)"
 ats = "ashby"
-slug = "within"
+slug = "within.ai"
 
 [[company]]  # YC Summer 2015, Fintech
 name = "Xendit"
