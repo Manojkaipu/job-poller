@@ -517,11 +517,6 @@ name = "Cosine"
 ats = "ashby"
 slug = "cosine"
 
-[[company]]  # YC Fall 2025, B2B
-name = "Cranston AI"
-ats = "ashby"
-slug = "cranston"
-
 [[company]]  # YC Winter 2023, B2B
 name = "Credal.ai"
 ats = "ashby"
