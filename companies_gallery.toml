@@ -113,11 +113,6 @@ ats = "ashby"
 slug = "ando"
 
 [[company]]
-name = "Anon"
-ats = "ashby"
-slug = "Anon"
-
-[[company]]
 name = "Anrok"
 ats = "ashby"
 slug = "anrok"
@@ -496,11 +491,6 @@ slug = "clerk"
 name = "Cloaked"
 ats = "ashby"
 slug = "cloaked"
-
-[[company]]
-name = "Cocoon"
-ats = "greenhouse"
-slug = "cocoon"
 
 [[company]]
 name = "CodeRabbit"
