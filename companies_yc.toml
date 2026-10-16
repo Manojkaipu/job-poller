@@ -1262,11 +1262,6 @@ name = "Nash"
 ats = "ashby"
 slug = "nash"
 
-[[company]]  # YC Winter 2024, Industrials
-name = "Navier AI"
-ats = "greenhouse"
-slug = "navierai"
-
 [[company]]  # YC Winter 2016, B2B
 name = "Netomi"
 ats = "lever"
