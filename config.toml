@@ -6,7 +6,8 @@
 companies_file = ["companies.toml", "companies_yc.toml", "companies_gallery.toml"]
 state_file = "state/seen.json"
 workers = 16                # boards fetched in parallel
-alert_after_failures = 3    # email about a board after this many failed runs in a row
+alert_after_failures = 3    # email about a board that's gone (404, 410, 422) after this many failed runs in a row
+alert_after_outage = 24     # ...and about any other failure (maintenance page, 5xx, 429, timeout) after this many
 
 [filters]
 # A title must contain one of these (whole words, any case; spaces also match "-" and "/").

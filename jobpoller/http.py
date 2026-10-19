@@ -43,16 +43,24 @@ def _request(url: str, *, body: dict | None = None, accept: str = "application/j
     raise AssertionError("unreachable")
 
 
-def get_json(url: str, **kw):
-    raw = _request(url, **kw)
+GONE_STATUS = {404, 410, 422}  # the board itself is gone or renamed (Workday answers 422 for a bad site)
+
+
+def _json(raw: bytes, url: str):
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
-        raise FetchError(f"not JSON from {url} (board moved or needs a different slug?)") from None
+        # Usually an HTML maintenance or block page served with a 200, as Workday did for every
+        # tenant during its Oct 17 maintenance; sometimes a board that moved.
+        raise FetchError(f"not JSON from {url} (maintenance page, or the board moved?)") from None
+
+
+def get_json(url: str, **kw):
+    return _json(_request(url, **kw), url)
 
 
 def post_json(url: str, body: dict, **kw):
-    return json.loads(_request(url, body=body, **kw))
+    return _json(_request(url, body=body, **kw), url)
 
 
 def get_text(url: str, **kw) -> str:

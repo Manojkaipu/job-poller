@@ -1774,8 +1774,8 @@ slug = "solidroad"
 
 [[company]]  # YC Summer 2025, Fintech
 name = "Solva"
-ats = "ashby"
-slug = "solva"
+ats = "yc"
+slug = "solva"  # its Ashby board is gone; it posts on Work at a Startup
 
 [[company]]  # YC Summer 2024, Industrials
 name = "Spaceium Inc"

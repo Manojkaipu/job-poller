@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import datetime as dt
 import os
+import re
 import sys
+from collections import defaultdict
 import time
 import tomllib
 from concurrent.futures import ThreadPoolExecutor
@@ -11,7 +13,7 @@ from dataclasses import dataclass, field
 
 from .ats import FETCHERS, Job, Partial
 from .filters import Filters, us_display
-from .http import FetchError
+from .http import GONE_STATUS, FetchError
 from .notify import posted_label
 from .state import BoardResult, State, now
 
@@ -34,7 +36,8 @@ class Config:
     companies: list[Company]
     state_file: str = "state/seen.json"
     workers: int = 8
-    alert_after_failures: int = 3
+    alert_after_failures: int = 3  # for a board that's gone (404, 410, 422)
+    alert_after_outage: int = 24  # for anything else: maintenance pages, 5xx, 429, timeouts
 
 
 def load_config(path: str = "config.toml", companies_path: str | None = None) -> Config:
@@ -71,6 +74,7 @@ def load_config(path: str = "config.toml", companies_path: str | None = None) ->
         state_file=os.path.normpath(os.path.join(base, state_file)),
         workers=s.get("workers", 8),
         alert_after_failures=s.get("alert_after_failures", 3),
+        alert_after_outage=s.get("alert_after_outage", 24),
     )
 
 
@@ -81,6 +85,7 @@ class Fetched:
     error: str | None = None
     seconds: float = 0.0
     partial: bool = False  # only the newest postings were read (see ats.Partial)
+    gone: bool = False  # the error says the board itself is gone, not that the ATS is having a bad hour
 
 
 def fetch_one(c: Company) -> Fetched:
@@ -93,7 +98,7 @@ def fetch_one(c: Company) -> Fetched:
             unique.setdefault(j.id, j)
         return Fetched(c, list(unique.values()), seconds=time.monotonic() - t, partial=isinstance(jobs, Partial))
     except FetchError as e:
-        return Fetched(c, error=str(e), seconds=time.monotonic() - t)
+        return Fetched(c, error=str(e), seconds=time.monotonic() - t, gone=e.status in GONE_STATUS)
     except Exception as e:  # a board changing its format shouldn't take the whole run down
         return Fetched(c, error=f"{type(e).__name__}: {e}", seconds=time.monotonic() - t)
 
@@ -117,6 +122,7 @@ def run(cfg: Config, state: State, log=print) -> RunReport:
     fetched = fetch_all(cfg.companies, cfg.workers)
     when = now()
     new, baselined, problems, alert_problems = [], {}, [], False
+    failing: dict[tuple[str, str], list[tuple[Fetched, int]]] = defaultdict(list)
 
     for f in fetched:
         key = f.company.key
@@ -124,9 +130,10 @@ def run(cfg: Config, state: State, log=print) -> RunReport:
             state.record(BoardResult(key, ok=False, error=f.error), when)
             fails = state.boards[key]["failures"]
             log(f"  ! {f.company.name:28} {f.error}  (failure {fails})")
-            if fails >= cfg.alert_after_failures:
-                problems.append(f"{f.company.name} ({key}): failing for {fails} runs: {f.error}")
-                alert_problems |= fails == cfg.alert_after_failures
+            threshold = cfg.alert_after_failures if f.gone else cfg.alert_after_outage
+            if fails >= threshold:
+                failing[(f.company.ats, _error_kind(f.error))].append((f, fails))
+                alert_problems |= fails == threshold
             continue
 
         ids = [j.id for j in f.jobs]
@@ -146,8 +153,30 @@ def run(cfg: Config, state: State, log=print) -> RunReport:
                 problems.append(f"{f.company.name} ({key}): 0 postings, had {prev}. Did the board move?")
         state.record(BoardResult(key, ok=True, job_ids=ids), when)
 
+    problems = _failure_lines(failing) + problems
     state.prune(when, keep_boards={c.key for c in cfg.companies})
     return RunReport(new, problems, baselined, fetched, alert_problems)
+
+
+GROUP_AT = 3  # this many boards on one ATS failing the same way is the ATS, not the boards
+
+
+def _error_kind(error: str) -> str:
+    """The error without its URL, so the same failure on different boards compares equal."""
+    return re.sub(r"\s*(from )?https?://\S+", "", error).strip()
+
+
+def _failure_lines(failing: dict[tuple[str, str], list[tuple[Fetched, int]]]) -> list[str]:
+    lines = []
+    for (ats, kind), items in failing.items():
+        if len(items) >= GROUP_AT:
+            names = ", ".join(f.company.name for f, _ in items)
+            runs = min(n for _, n in items)
+            lines.append(f"{ats}: {len(items)} boards failing for {runs}+ runs, probably an outage on {ats}'s side "
+                         f"rather than the boards: {kind} ({names})")
+        else:
+            lines += [f"{f.company.name} ({f.company.key}): failing for {n} runs: {f.error}" for f, n in items]
+    return lines
 
 
 def summarize(report: RunReport, log=print) -> None:

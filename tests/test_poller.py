@@ -85,7 +85,7 @@ def test_failed_fetch_keeps_postings_and_flags_after_threshold(setup):
     boards, cfg = setup
     boards.jobs["acme"] = [j(1), j(2)]
     cycle(cfg)
-    boards.jobs["acme"] = FetchError("HTTP 503")
+    boards.jobs["acme"] = FetchError("HTTP 404", 404)  # gone: alert_after_failures (2 here)
     r1 = cycle(cfg)
     assert r1.problems == [] and not r1.alert_problems
     r2 = cycle(cfg)
@@ -96,6 +96,31 @@ def test_failed_fetch_keeps_postings_and_flags_after_threshold(setup):
     boards.jobs["acme"] = [j(1), j(2), j(3)]
     r = cycle(cfg)
     assert [x.id for x in r.new] == ["3"]  # 1 and 2 weren't forgotten during the outage
+
+
+def test_outage_errors_wait_longer_before_alerting(setup):
+    # Workday's Oct 17 maintenance served HTML instead of JSON for ~10 hours; that's not a dead board.
+    boards, cfg = setup
+    cfg.alert_after_outage = 4
+    boards.jobs["acme"] = [j(1)]
+    cycle(cfg)
+    boards.jobs["acme"] = FetchError("not JSON from https://x (maintenance page, or the board moved?)")
+    reports = [cycle(cfg) for _ in range(4)]
+    assert [bool(r.problems) for r in reports] == [False, False, False, True]
+    assert reports[-1].alert_problems
+
+
+def test_same_failure_on_many_boards_of_one_ats_is_one_line(setup):
+    boards, cfg = setup
+    cfg.alert_after_outage = cfg.alert_after_failures = 1
+    cfg.companies = [Company(n, "fake", n.lower()) for n in ("A", "B", "C")] + [Company("D", "fake", "d")]
+    for s in ("a", "b", "c"):
+        boards.jobs[s] = FetchError(f"not JSON from https://{s}.example/jobs (maintenance page, or the board moved?)")
+    boards.jobs["d"] = FetchError("HTTP 404 from https://d.example/jobs", 404)
+    r = cycle(cfg)
+    assert len(r.problems) == 2 and r.alert_problems
+    assert r.problems[0].startswith("fake: 3 boards failing for 1+ runs") and "(A, B, C)" in r.problems[0]
+    assert r.problems[1] == "D (fake:d): failing for 1 runs: HTTP 404 from https://d.example/jobs"
 
 
 def test_a_board_that_failed_on_its_first_run_still_baselines(setup):
