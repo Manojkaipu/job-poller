@@ -47,3 +47,31 @@ def test_dotenv_does_not_override_real_env(tmp_path, monkeypatch):
     import os
     assert os.environ["SMTP_USER"] == "env@example.com"
     assert os.environ["MAIL_TO"] == "a@x.com, b@x.com"
+
+
+def _report(new, problems, alert):
+    from types import SimpleNamespace
+    return SimpleNamespace(new=new, problems=problems, alert_problems=alert)
+
+
+def test_one_recipient_list_gets_one_combined_email(monkeypatch):
+    from jobpoller.__main__ import mails
+    monkeypatch.setenv("SMTP_USER", "me@x.com")
+    monkeypatch.delenv("MAIL_TO", raising=False)
+    monkeypatch.delenv("ALERTS_TO", raising=False)
+    assert mails(_report(["job"], ["Acme: failing"], False)) == [(["me@x.com"], ["job"], ["Acme: failing"])]
+
+
+def test_friends_on_mail_to_get_postings_but_not_board_alerts(monkeypatch):
+    from jobpoller.__main__ import mails
+    monkeypatch.setenv("SMTP_USER", "me@x.com")
+    monkeypatch.setenv("MAIL_TO", "me@x.com, friend@y.com")
+    monkeypatch.delenv("ALERTS_TO", raising=False)  # defaults to SMTP_USER
+    assert mails(_report(["job"], ["Acme: failing"], True)) == [
+        (["me@x.com", "friend@y.com"], ["job"], []),
+        (["me@x.com"], [], ["Acme: failing"]),
+    ]
+    # a board still failing, but no threshold just crossed: postings only, nothing to me separately
+    assert mails(_report(["job"], ["Acme: failing"], False)) == [(["me@x.com", "friend@y.com"], ["job"], [])]
+    # no new postings: only the alert, only to me
+    assert mails(_report([], ["Acme: failing"], True)) == [(["me@x.com"], [], ["Acme: failing"])]

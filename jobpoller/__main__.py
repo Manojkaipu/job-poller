@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import os
 import sys
 
 from . import notify
@@ -28,13 +27,30 @@ def cmd_run(args) -> int:
     should_mail = report.new or report.alert_problems
     if should_mail and not args.no_email:
         if notify.email_configured():
-            notify.send(report.new, report.problems)
-            print(f"emailed {os.environ.get('MAIL_TO') or os.environ['SMTP_USER']}")
+            for to, new, problems in mails(report):
+                notify.send(new, problems, to=to)
+                print(f"emailed {', '.join(to)}")
         else:
             print("email not configured (set SMTP_USER and SMTP_PASSWORD); printed only")
     # Saved only after the email went out, so a failed send is retried next run.
     state.save()
     return 0
+
+
+def mails(report) -> list[tuple[list[str], list, list[str]]]:
+    """(recipients, new postings, board problems) for each email this run sends.
+
+    Postings go to MAIL_TO and board problems to ALERTS_TO. With one list for both (just me),
+    it's one email as before: postings with any failing boards listed underneath. With a friend
+    on MAIL_TO, postings go to everyone, and the problems go to ALERTS_TO in their own email
+    only when a board has just crossed its alert threshold."""
+    jobs_to, alerts_to = notify.recipients()
+    if set(jobs_to) == set(alerts_to):
+        return [(jobs_to, report.new, report.problems)]
+    out = [(jobs_to, report.new, [])] if report.new else []
+    if report.alert_problems:
+        out.append((alerts_to, [], report.problems))
+    return out
 
 
 def cmd_list(args) -> int:
@@ -80,7 +96,7 @@ def cmd_test_email(args) -> int:
             if cfg.filters.match(j) and j.posted and cfg.filters.fresh(j, now)][:5]
     notify.send(jobs, [], subject_line=f"Job poller test: {len(jobs)} matching postings from the last "
                                        f"{cfg.filters.max_age_hours:g}h (a sample, not new alerts)")
-    print(f"sent a test email with {len(jobs)} postings to {os.environ.get('MAIL_TO') or os.environ['SMTP_USER']}")
+    print(f"sent a test email with {len(jobs)} postings to {', '.join(notify.recipients()[0])}")
     return 0
 
 

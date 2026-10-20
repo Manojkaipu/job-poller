@@ -4,7 +4,9 @@
     SMTP_PORT      default 465 (implicit TLS); 587 uses STARTTLS
     SMTP_USER      login, usually your address
     SMTP_PASSWORD  for Gmail, an app password (Google Account > Security > App passwords)
-    MAIL_TO        comma-separated recipients, default SMTP_USER
+    MAIL_TO        comma-separated recipients of new postings, default SMTP_USER
+    ALERTS_TO      recipients of "Boards needing attention", default SMTP_USER (so friends on
+                   MAIL_TO get only postings)
     MAIL_FROM      default SMTP_USER
 """
 from __future__ import annotations
@@ -98,12 +100,25 @@ def render_html(new: list[Job], problems: list[str]) -> str:
     return "".join(parts)
 
 
-def send(new: list[Job], problems: list[str], subject_line: str | None = None) -> None:
-    env = lambda k, default=None: os.environ.get(k) or default  # CI passes unset secrets as ""
+def _env(k: str, default: str | None = None) -> str | None:
+    return os.environ.get(k) or default  # CI passes unset secrets as ""
+
+
+def _addresses(var: str) -> list[str]:
+    return [a.strip() for a in (_env(var, _env("SMTP_USER")) or "").split(",") if a.strip()]
+
+
+def recipients() -> tuple[list[str], list[str]]:
+    """(who gets new postings, who gets board alerts)."""
+    return _addresses("MAIL_TO"), _addresses("ALERTS_TO")
+
+
+def send(new: list[Job], problems: list[str], subject_line: str | None = None, to: list[str] | None = None) -> None:
+    env = _env
     user, password = env("SMTP_USER"), env("SMTP_PASSWORD")
     host = env("SMTP_HOST", "smtp.gmail.com")
     port = int(env("SMTP_PORT", "465"))
-    to = [a.strip() for a in env("MAIL_TO", user).split(",") if a.strip()]
+    to = to or recipients()[0]
     if host == "smtp.gmail.com":
         password = password.replace(" ", "")  # Google shows app passwords as "abcd efgh ijkl mnop"
 

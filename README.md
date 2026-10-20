@@ -67,7 +67,8 @@ Email goes out over SMTP. Put the settings in a `.env` file (gitignored) or the 
 ```
 SMTP_USER=you@gmail.com
 SMTP_PASSWORD=your-app-password     # Gmail: Google Account > Security > 2-Step Verification > App passwords
-MAIL_TO=you@gmail.com               # optional, comma-separated
+MAIL_TO=you@gmail.com,friend@gmail.com   # optional, comma-separated: who gets new postings
+ALERTS_TO=you@gmail.com             # optional: who gets "Boards needing attention" (default SMTP_USER)
 # SMTP_HOST=smtp.gmail.com  SMTP_PORT=465  (defaults; port 587 uses STARTTLS)
 ```
 
@@ -133,7 +134,7 @@ facets = { jobFamilyGroup = ["14fa3452ec7c1011f90d0002a2100000", "14fa3452ec7c10
 
 A run takes about 6 minutes, so the interval only trades alert delay against load: hourly means ~12-15 emails a day and about 60,000 board requests. The workflow's own cron (every 2 hours) stays as a backup; overlapping triggers queue behind each other and share the state, so nothing is emailed twice. Public repos get unlimited Actions minutes.
 
-Add `SMTP_USER`, `SMTP_PASSWORD` and optionally `MAIL_TO` as repository secrets. The state file is kept in the Actions cache, not committed, so the repo doesn't grow a commit per run. GitHub pauses scheduled workflows in a public repo with no activity for 60 days, and the poller never commits, so `keepalive.yml` re-enables the poll workflow on the 1st of each month.
+Add `SMTP_USER`, `SMTP_PASSWORD` and optionally `MAIL_TO` and `ALERTS_TO` as repository secrets. Everyone on `MAIL_TO` gets the postings; board alerts go only to `ALERTS_TO` (by default the sending account), in their own email when a board crosses its alert threshold. When the two lists are the same it's one email, with any failing boards listed under the postings. The state file is kept in the Actions cache, not committed, so the repo doesn't grow a commit per run. GitHub pauses scheduled workflows in a public repo with no activity for 60 days, and the poller never commits, so `keepalive.yml` re-enables the poll workflow on the 1st of each month.
 
 **Windows Task Scheduler**, if you'd rather run it locally:
 
