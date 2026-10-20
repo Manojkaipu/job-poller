@@ -223,3 +223,14 @@ def test_search_terms_reach_the_workday_fetcher(tmp_path, monkeypatch):
     monkeypatch.setitem(poller.FETCHERS, "workday", lambda slug, company, search=(): seen.update(search=search) or [])
     poller.fetch_one(Company("W", "workday", "w.wd5.myworkdayjobs.com/X", ("software engineer",)))
     assert seen["search"] == ("software engineer",)
+
+
+def test_facets_reach_the_workday_fetcher_and_only_workday_takes_them(tmp_path, monkeypatch):
+    seen = {}
+    monkeypatch.setitem(poller.FETCHERS, "workday", lambda slug, company, facets=None: seen.update(facets=facets) or [])
+    poller.fetch_one(Company("W", "workday", "w.wd5.myworkdayjobs.com/X", facets={"jobFamilyGroup": ["a1"]}))
+    assert seen["facets"] == {"jobFamilyGroup": ["a1"]}
+    (tmp_path / "config.toml").write_text("")
+    (tmp_path / "companies.toml").write_text('[[company]]\nname="A"\nats="lever"\nslug="a"\nfacets={x=["1"]}\n')
+    with pytest.raises(ValueError, match="only supported for workday"):
+        load_config(str(tmp_path / "config.toml"))

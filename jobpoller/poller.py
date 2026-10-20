@@ -24,6 +24,7 @@ class Company:
     ats: str
     slug: str
     search: tuple[str, ...] = ()  # Workday only: search terms instead of the whole board
+    facets: dict[str, list[str]] = field(default_factory=dict)  # Workday only: e.g. job categories
 
     @property
     def key(self) -> str:
@@ -54,9 +55,9 @@ def load_config(path: str = "config.toml", companies_path: str | None = None) ->
     for c in raw:
         if c["ats"] not in FETCHERS:
             raise ValueError(f"{c['name']}: unknown ats {c['ats']!r}; expected one of {', '.join(FETCHERS)}")
-        co = Company(c["name"], c["ats"], c["slug"], tuple(c.get("search", ())))
-        if co.search and co.ats != "workday":
-            raise ValueError(f"{co.name}: `search` is only supported for workday boards")
+        co = Company(c["name"], c["ats"], c["slug"], tuple(c.get("search", ())), dict(c.get("facets", {})))
+        if (co.search or co.facets) and co.ats != "workday":
+            raise ValueError(f"{co.name}: `search` and `facets` are only supported for workday boards")
         if co.key in keys:
             raise ValueError(f"{co.name}: board {co.key} is listed twice")
         keys.add(co.key)
@@ -91,7 +92,8 @@ class Fetched:
 def fetch_one(c: Company) -> Fetched:
     t = time.monotonic()
     try:
-        jobs = FETCHERS[c.ats](c.slug, c.name, **({"search": c.search} if c.search else {}))
+        kw = {k: v for k, v in (("search", c.search), ("facets", c.facets)) if v}
+        jobs = FETCHERS[c.ats](c.slug, c.name, **kw)
         # Some boards list one posting under several locations with the same id; keep the first.
         unique: dict[str, Job] = {}
         for j in jobs:

@@ -860,7 +860,7 @@ slug = "fal-ai"
 [[company]]
 name = "Faro"
 ats = "workable"
-slug = "farohealth"
+slug = "faro"  # Faro Health is now Faro AI; its farohealth account is gone
 
 [[company]]
 name = "Fay"

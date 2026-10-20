@@ -245,6 +245,16 @@ def test_workday_search_terms_are_merged(monkeypatch):
     assert [j.id for j in jobs] == ["/job/a", "/job/b", "/job/c"]
 
 
+def test_workday_facets_go_in_every_request(monkeypatch):
+    item = load("workday")[0]
+    bodies = []
+    monkeypatch.setattr(ats, "post_json", lambda url, body, **kw: bodies.append(body) or {
+        "total": 25, "jobPostings": [{**item, "externalPath": f"/job/{body['offset'] + i}"} for i in range(min(20, 25 - body["offset"]))]})
+    jobs = ats.workday("salesforce.wd12.myworkdayjobs.com/External_Career_Site", "Salesforce",
+                       facets={"jobFamilyGroup": ["eng"]})
+    assert len(jobs) == 25 and [b["appliedFacets"] for b in bodies] == [{"jobFamilyGroup": ["eng"]}] * 2
+
+
 @pytest.mark.parametrize("text,path,expected", [
     ("2 Locations", "/job/India-Gurugram/SAP-Engineer_JR2026497", "India Gurugram (+1 more)"),  # emailed once
     ("3 Locations", "/job/US-CA-Santa-Clara/ML-Engineer_JR1", "US CA Santa Clara (+2 more)"),

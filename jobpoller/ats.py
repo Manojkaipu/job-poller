@@ -347,19 +347,21 @@ def _paged(first: dict, total: int, page_size: int, fetch_page, workers: int = P
         return [first, *pool.map(fetch_page, offsets)]
 
 
-def workday(slug: str, company: str, search: tuple[str, ...] = ()) -> list[Job]:
+def workday(slug: str, company: str, search: tuple[str, ...] = (), facets: dict | None = None) -> list[Job]:
     """slug is the careers-site URL, e.g. nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite.
 
     Workday pages 20 postings per request, reports the total only on the first page, and caps
     a listing at 2,000. For huge boards (Walmart) pass `search` terms: each is a separate
-    Workday search and the results are merged.
+    Workday search and the results are merged. `facets` narrows every request to Workday's own
+    filters, e.g. {"jobFamilyGroup": [<category ids>]} (ids are in the response's "facets"):
+    Salesforce's 1,500-posting board rate-limits GitHub's runners, its engineering categories don't.
     """
     host, site = _workday_parts(slug)
     tenant = host.split(".")[0]
     api = f"https://{host}/wday/cxs/{tenant}/{site}/jobs"
     out: dict[str, Job] = {}
     for text in search or ("",):
-        page = lambda offset: post_json(api, {"appliedFacets": {}, "limit": 20, "offset": offset, "searchText": text})
+        page = lambda offset: post_json(api, {"appliedFacets": facets or {}, "limit": 20, "offset": offset, "searchText": text})
         first = page(0)
         total = first.get("total", 0)
         _check_size(total, slug)

@@ -819,6 +819,10 @@ slug = "adobe.wd5.myworkdayjobs.com/external_experienced"
 name = "Salesforce"
 ats = "workday"
 slug = "salesforce.wd12.myworkdayjobs.com/External_Career_Site"
+# The whole board (~1,500, mostly sales) is ~80 requests and GitHub's runners get HTTP 429 every
+# time; these categories are ~8. Software Engineering, Data, Enterprise Technology & Infrastructure.
+facets = { jobFamilyGroup = ["14fa3452ec7c1011f90d0002a2100000", "14fa3452ec7c1011f90cf661a7c80000",
+                             "14fa3452ec7c1011f90cf8c9c5960000"] }
 
 [[company]]
 name = "Workday"

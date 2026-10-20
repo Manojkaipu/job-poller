@@ -115,6 +115,12 @@ search = ["software engineer", "data scientist", "machine learning", "data engin
 
 Changing a board's `search` changes which postings it returns, so expect one run of "new" postings from the widened part.
 
+`facets` narrows a Workday board to Workday's own filters instead, such as job categories. The ids are in the `facets` part of any response from the board's `/jobs` endpoint. Salesforce's whole board is ~1,500 postings, mostly sales, about 80 requests, and GitHub's runners got HTTP 429 from it on every run; its Software Engineering, Data and Enterprise Technology & Infrastructure categories are ~160 postings in 8 requests and still hold every posting that matches the filters:
+
+```toml
+facets = { jobFamilyGroup = ["14fa3452ec7c1011f90d0002a2100000", "14fa3452ec7c1011f90cf661a7c80000", "14fa3452ec7c1011f90cf8c9c5960000"] }
+```
+
 **Filters** are in `config.toml`. A title has to contain one of the `include` terms and none of the `exclude` terms, as whole words: `ml` matches "ML Engineer" but not "HTML". Phrases in `protect` are ignored by the exclude check, so `staff` can be excluded without losing "Member of Technical Staff". Location is checked against US states, state codes, major cities and country names, so "US, CA, Santa Clara", "New York City, NY" and "Remote - US" pass while "London", "Toronto, ON" and "Remote - EMEA" don't. A posting with no location, or plain "Remote", is kept.
 
 ## Scheduling
@@ -171,5 +177,5 @@ Things that went wrong while building it, and the check that caught each:
 * **Stale search results.** Web searches pointed Snyk, dbt Labs and Grammarly at Greenhouse boards that now return 404. Every slug was fetched before it went in, so none of those made it into `companies.toml`.
 * **"2 Locations".** Workday summarizes multi-city postings as "2 Locations", which the US filter read as a foreign place and dropped. Found by fetching NVIDIA with the new parallel paging; it now counts as an unknown location.
 * **Unencoded slugs.** Hippocratic AI's Ashby board name has a space, which the Ashby fetcher sent unencoded. The startups.gallery importer hit the same thing from the other side: links carry the space as `%20`, so slugs are now decoded before use.
-* **Boards that move.** Hex moved from Greenhouse to Ashby, Suger rebranded as Fours (Lever `fours`), Within as Klarity (Ashby `within.ai`), and Corgi emptied its Ashby board and now posts only on YC's Work at a Startup. All showed up in the email's "Boards needing attention" section, which is what it's for; the Work at a Startup fetcher exists because of Corgi. Cranston, Anon, Cocoon and Navier AI had no new board to move to and were removed. A hit on `jobs.ashbyhq.com/<name>` proves nothing, since Ashby serves that page for any name; the API's `jobBoard: null` is what says a board is gone.
+* **Boards that move.** Hex moved from Greenhouse to Ashby, Suger rebranded as Fours (Lever `fours`), Faro Health as Faro AI (Workable `faro`, checked against the account's own description since `faro` could be anyone), Within as Klarity (Ashby `within.ai`), and Corgi emptied its Ashby board and now posts only on YC's Work at a Startup. All showed up in the email's "Boards needing attention" section, which is what it's for; the Work at a Startup fetcher exists because of Corgi. Cranston, Anon, Cocoon and Navier AI had no new board to move to and were removed. A hit on `jobs.ashbyhq.com/<name>` proves nothing, since Ashby serves that page for any name; the API's `jobBoard: null` is what says a board is gone.
 * **Loose ownership check.** The YC importer first matched a company's name anywhere in a posting with punctuation stripped, so a short name could hide inside another word ("arc" in "research"). Re-checking all 117 short-name hits with whole-word matching found the rule too loose rather than any wrong board; short names now need a whole-word or full-domain match.
