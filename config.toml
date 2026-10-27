@@ -35,3 +35,21 @@ allow_unknown_location = false # drop postings that don't say where they are
 # Only alert on postings the board says went up within this many hours (0 = no limit).
 # Boards that don't publish a date are judged by when the poller first saw the posting.
 max_age_hours = 24
+
+# Recipients who want more than the filters above. Each profile gets its own email with every
+# posting the filters above match plus the ones its `include_extra` terms match (same excludes,
+# location and freshness rules). Addresses come from the environment variable named in `to_env`
+# (a repository secret in CI, since this repo is public); keep them out of MAIL_TO.
+[[profile]]
+name = "robotics"
+to_env = "MAIL_TO_ROBOTICS"
+include_extra = [
+  "robotics", "robotic", "robot", "robot learning", "physical ai", "embodied", "humanoid",
+  "autonomy", "autonomous", "perception", "motion planning", "path planning", "controls software",
+  "whole body control", "manipulation", "locomotion", "slam", "state estimation", "sensor fusion",
+  "reinforcement learning", "simulation engineer", "mechatronics", "teleoperation", "embedded software",
+]
+# Not "controls engineer" (data center and power plant controls), "firmware" (consumer devices,
+# ASICs) or "localization" (translation): checked against every board on 2026-10-26.
+# Applied only to postings that come in through include_extra, never to the base matches.
+exclude_extra = ["operator", "technician", "pilot", "assembler", "analyst", "specialist", "marketing", "chief"]

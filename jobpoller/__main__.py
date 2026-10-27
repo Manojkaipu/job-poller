@@ -24,10 +24,10 @@ def cmd_run(args) -> int:
         print("\n(dry run: state not saved, no email)")
         return 0
 
-    should_mail = report.new or report.alert_problems
-    if should_mail and not args.no_email:
+    outgoing = mails(report, cfg.profiles)
+    if outgoing and not args.no_email:
         if notify.email_configured():
-            for to, new, problems in mails(report):
+            for to, new, problems in outgoing:
                 notify.send(new, problems, to=to)
                 print(f"emailed {', '.join(to)}")
         else:
@@ -37,7 +37,7 @@ def cmd_run(args) -> int:
     return 0
 
 
-def mails(report) -> list[tuple[list[str], list, list[str]]]:
+def mails(report, profiles=()) -> list[tuple[list[str], list, list[str]]]:
     """(recipients, new postings, board problems) for each email this run sends.
 
     Postings go to MAIL_TO and board problems to ALERTS_TO. With one list for both (just me),
@@ -46,10 +46,23 @@ def mails(report) -> list[tuple[list[str], list, list[str]]]:
     only when a board has just crossed its alert threshold."""
     jobs_to, alerts_to = notify.recipients()
     if set(jobs_to) == set(alerts_to):
-        return [(jobs_to, report.new, report.problems)]
+        combined = [(jobs_to, report.new, report.problems)] if report.new or report.alert_problems else []
+        return combined + _profile_mails(report, profiles)
     out = [(jobs_to, report.new, [])] if report.new else []
     if report.alert_problems:
         out.append((alerts_to, [], report.problems))
+    return out + _profile_mails(report, profiles)
+
+
+def _profile_mails(report, profiles) -> list[tuple[list[str], list, list[str]]]:
+    """Each profile (say, someone who also wants robotics roles) gets its own email with every
+    posting its filters match: the base ones and its extras. Keep its recipients out of MAIL_TO,
+    or they get both emails."""
+    out = []
+    for p in profiles:
+        to, jobs = notify.profile_recipients(p.to_env), report.profile_new.get(p.name, [])
+        if to and jobs:
+            out.append((to, jobs, []))
     return out
 
 
@@ -88,15 +101,25 @@ def cmd_test_email(args) -> int:
         print("email not configured: set SMTP_USER and SMTP_PASSWORD in .env")
         return 1
     cfg = load_config(args.config)
+    filters, to = cfg.filters, notify.recipients()[0]
+    if args.profile:
+        p = next((p for p in cfg.profiles if p.name == args.profile), None)
+        if not p:
+            print(f"no profile {args.profile!r}; config.toml has: {', '.join(x.name for x in cfg.profiles) or 'none'}")
+            return 1
+        filters, to = p, notify.profile_recipients(p.to_env)
+        if not to:
+            print(f"{p.to_env} isn't set, so profile {p.name!r} has no one to send to")
+            return 1
     # A sample of what a real alert looks like: matching postings from the last max_age_hours,
     # taken from fast boards. (Not ones the poller hasn't seen; that's what `run` sends.)
     sample = [c for c in cfg.companies if c.ats in ("greenhouse", "ashby")][:80]
     now = dt.datetime.now(dt.timezone.utc)
     jobs = [j for f in fetch_all(sample, cfg.workers) for j in f.jobs
-            if cfg.filters.match(j) and j.posted and cfg.filters.fresh(j, now)][:5]
-    notify.send(jobs, [], subject_line=f"Job poller test: {len(jobs)} matching postings from the last "
-                                       f"{cfg.filters.max_age_hours:g}h (a sample, not new alerts)")
-    print(f"sent a test email with {len(jobs)} postings to {', '.join(notify.recipients()[0])}")
+            if filters.match(j) and j.posted and filters.fresh(j, now)][:5]
+    notify.send(jobs, [], to=to, subject_line=f"Job poller test: {len(jobs)} matching postings from the last "
+                                              f"{filters.max_age_hours:g}h (a sample, not new alerts)")
+    print(f"sent a test email with {len(jobs)} postings to {', '.join(to)}")
     return 0
 
 
@@ -130,7 +153,9 @@ def main(argv=None) -> int:
     ls.set_defaults(fn=cmd_list)
 
     sub.add_parser("check", help="fetch every board and report counts and errors").set_defaults(fn=cmd_check)
-    sub.add_parser("test-email", help="send a sample email to check the SMTP settings").set_defaults(fn=cmd_test_email)
+    te = sub.add_parser("test-email", help="send a sample email to check the SMTP settings")
+    te.add_argument("--profile", help="send the sample a profile's recipients would get, to them")
+    te.set_defaults(fn=cmd_test_email)
 
     d = sub.add_parser("discover", help="find which ATS a company uses")
     d.add_argument("names", nargs="+")

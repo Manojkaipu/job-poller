@@ -52,9 +52,13 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
           ALERTS_TO: ${{ secrets.ALERTS_TO }}
+          MAIL_TO_ROBOTICS: ${{ secrets.MAIL_TO_ROBOTICS }}  # the robotics profile in config.toml
         run: |
           python -m jobpoller run
-          if [ "${{ inputs.test_email }}" = "true" ]; then python -m jobpoller test-email; fi
+          if [ "${{ inputs.test_email }}" = "true" ]; then
+            python -m jobpoller test-email
+            if [ -n "$MAIL_TO_ROBOTICS" ]; then python -m jobpoller test-email --profile robotics; fi
+          fi
 
       - uses: actions/cache/save@v4
         if: always()

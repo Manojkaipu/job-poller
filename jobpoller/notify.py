@@ -104,8 +104,14 @@ def _env(k: str, default: str | None = None) -> str | None:
     return os.environ.get(k) or default  # CI passes unset secrets as ""
 
 
-def _addresses(var: str) -> list[str]:
-    return [a.strip() for a in (_env(var, _env("SMTP_USER")) or "").split(",") if a.strip()]
+def _addresses(var: str, default_to_me: bool = True) -> list[str]:
+    raw = _env(var, _env("SMTP_USER") if default_to_me else None) or ""
+    return [a.strip() for a in raw.split(",") if a.strip()]
+
+
+def profile_recipients(to_env: str) -> list[str]:
+    """A profile's addresses; none (so no email) if its secret isn't set."""
+    return _addresses(to_env, default_to_me=False)
 
 
 def recipients() -> tuple[list[str], list[str]]:

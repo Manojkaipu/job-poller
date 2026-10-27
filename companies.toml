@@ -1053,3 +1053,194 @@ slug = "jobs.teradyne.com"
 name = "Veeco"
 ats = "successfactors"
 slug = "careers.veeco.com"
+
+# --- Robotics and physical AI (for the robotics profile in config.toml) -----------
+# Found with `discover` on 2026-10-26; namesakes (Persona, a Middle East "Agility", Mujin's Japan board)
+# were dropped by their sample titles. Not on a supported board: Boston Dynamics, Symbotic, Gatik,
+# Machina Labs, Pony.ai, Hello Robot, Pickle, Scythe, Monarch, Bonsai, Cartken, Starship, Brightpick,
+# Vention, Realtime Robotics, Dusty Robotics, Canvas.
+
+[[company]]
+name = "Agility Robotics"
+ats = "greenhouse"
+slug = "agilityrobotics"
+
+[[company]]
+name = "Apptronik"
+ats = "greenhouse"
+slug = "apptronik"
+
+[[company]]
+name = "Dexterity"
+ats = "lever"
+slug = "dexterity"
+
+[[company]]
+name = "Collaborative Robotics"
+ats = "ashby"
+slug = "cobot"
+
+[[company]]
+name = "Bear Robotics"
+ats = "breezy"
+slug = "bear-robotics"
+
+[[company]]
+name = "Formic"
+ats = "greenhouse"
+slug = "formic"
+
+[[company]]
+name = "Nimble Robotics"
+ats = "greenhouse"
+slug = "nimblerobotics"
+
+[[company]]
+name = "Field AI"
+ats = "lever"
+slug = "field-ai"
+
+[[company]]
+name = "The Bot Company"
+ats = "ashby"
+slug = "thebotcompany"
+
+[[company]]
+name = "Diligent Robotics"
+ats = "greenhouse"
+slug = "diligentrobotics"
+
+[[company]]
+name = "Built Robotics"
+ats = "ashby"
+slug = "built-robotics"
+
+[[company]]
+name = "Carbon Robotics"
+ats = "ashby"
+slug = "carbon-robotics"
+
+[[company]]
+name = "Zipline"
+ats = "greenhouse"
+slug = "flyzipline"
+
+[[company]]
+name = "Serve Robotics"
+ats = "ashby"
+slug = "serverobotics"
+
+[[company]]
+name = "Path Robotics"
+ats = "greenhouse"
+slug = "pathrobotics"
+
+[[company]]
+name = "Bright Machines"
+ats = "lever"
+slug = "brightmachines"
+
+[[company]]
+name = "Locus Robotics"
+ats = "greenhouse"
+slug = "locusrobotics"
+
+[[company]]
+name = "Plus One Robotics"
+ats = "bamboohr"
+slug = "plusonerobotics"
+
+[[company]]
+name = "Mujin"
+ats = "bamboohr"
+slug = "mujin"
+
+[[company]]
+name = "Standard Bots"
+ats = "ashby"
+slug = "standardbots"
+
+[[company]]
+name = "Generalist AI"
+ats = "ashby"
+slug = "generalist"
+
+[[company]]
+name = "Reflex Robotics"
+ats = "ashby"
+slug = "reflexrobotics"
+
+[[company]]
+name = "Foundation Robotics"
+ats = "rippling"
+slug = "foundation-robotics"
+
+[[company]]
+name = "Tutor Intelligence"
+ats = "lever"
+slug = "tutorintelligence"
+
+[[company]]
+name = "Kodiak Robotics"
+ats = "greenhouse"
+slug = "kodiak"
+
+[[company]]
+name = "Stack AV"
+ats = "greenhouse"
+slug = "stackav"
+
+[[company]]
+name = "Wayve"
+ats = "ashby"
+slug = "wayve"
+
+[[company]]
+name = "Glacier"
+ats = "ashby"
+slug = "glacier"
+
+[[company]]
+name = "Chef Robotics"
+ats = "gem"
+slug = "chef-robotics"
+
+[[company]]
+name = "Ambi Robotics"
+ats = "lever"
+slug = "ambirobotics"
+
+[[company]]
+name = "Divergent"
+ats = "greenhouse"
+slug = "divergent"
+
+[[company]]
+name = "Hermeus"
+ats = "lever"
+slug = "hermeus"
+
+[[company]]
+name = "Overland AI"
+ats = "rippling"
+slug = "overland-ai"
+
+[[company]]
+name = "Forterra"
+ats = "rippling"
+slug = "forterra"
+
+[[company]]
+name = "Torc Robotics"
+ats = "greenhouse"
+slug = "torcrobotics"
+
+[[company]]
+name = "Avride"
+ats = "greenhouse"
+slug = "avride"
+
+[[company]]
+name = "Intuitive Surgical"
+ats = "smartrecruiters"
+slug = "intuitive"

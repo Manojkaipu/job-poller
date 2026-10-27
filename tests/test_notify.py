@@ -75,3 +75,29 @@ def test_friends_on_mail_to_get_postings_but_not_board_alerts(monkeypatch):
     assert mails(_report(["job"], ["Acme: failing"], False)) == [(["me@x.com", "friend@y.com"], ["job"], [])]
     # no new postings: only the alert, only to me
     assert mails(_report([], ["Acme: failing"], True)) == [(["me@x.com"], [], ["Acme: failing"])]
+
+
+def test_a_profile_gets_its_own_email_only_when_its_secret_is_set(monkeypatch):
+    from types import SimpleNamespace
+    from jobpoller.__main__ import mails
+    monkeypatch.setenv("SMTP_USER", "me@x.com")
+    monkeypatch.delenv("MAIL_TO", raising=False)
+    monkeypatch.delenv("ALERTS_TO", raising=False)
+    prof = SimpleNamespace(name="robotics", to_env="MAIL_TO_ROBOTICS")
+    report = SimpleNamespace(new=["job"], problems=[], alert_problems=False, profile_new={"robotics": ["job", "robot job"]})
+    monkeypatch.delenv("MAIL_TO_ROBOTICS", raising=False)
+    assert mails(report, [prof]) == [(["me@x.com"], ["job"], [])]  # not set: never falls back to me
+    monkeypatch.setenv("MAIL_TO_ROBOTICS", "her@z.com")
+    assert mails(report, [prof]) == [(["me@x.com"], ["job"], []), (["her@z.com"], ["job", "robot job"], [])]
+
+
+def test_a_run_with_only_profile_postings_still_emails_the_profile(monkeypatch):
+    from types import SimpleNamespace
+    from jobpoller.__main__ import mails
+    monkeypatch.setenv("SMTP_USER", "me@x.com")
+    monkeypatch.delenv("MAIL_TO", raising=False)
+    monkeypatch.delenv("ALERTS_TO", raising=False)
+    monkeypatch.setenv("MAIL_TO_ROBOTICS", "her@z.com")
+    prof = SimpleNamespace(name="robotics", to_env="MAIL_TO_ROBOTICS")
+    report = SimpleNamespace(new=[], problems=["Acme: still failing"], alert_problems=False, profile_new={"robotics": ["robot job"]})
+    assert mails(report, [prof]) == [(["her@z.com"], ["robot job"], [])]  # nothing for me: no new postings, no new alert

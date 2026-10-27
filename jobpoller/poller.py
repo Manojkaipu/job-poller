@@ -1,13 +1,14 @@
 """Load the config, fetch every board in parallel, diff against the state, and report what's new."""
 from __future__ import annotations
 
+import dataclasses
 import datetime as dt
 import os
 import re
 import sys
-from collections import defaultdict
 import time
 import tomllib
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
@@ -32,9 +33,30 @@ class Company:
 
 
 @dataclass
+class Profile:
+    """A recipient who wants more than the base filters: everything they match, plus postings
+    whose titles hit the profile's own terms (with the base excludes and its own extra ones)."""
+    name: str
+    to_env: str  # environment variable (a repo secret in CI) holding the address(es)
+    base: Filters
+    extra: Filters
+
+    def match(self, job: Job) -> bool:
+        return self.base.match(job) or self.extra.match(job)
+
+    def fresh(self, job: Job, now: dt.datetime) -> bool:
+        return self.base.fresh(job, now)
+
+    @property
+    def max_age_hours(self) -> float:
+        return self.base.max_age_hours
+
+
+@dataclass
 class Config:
     filters: Filters
     companies: list[Company]
+    profiles: list[Profile] = field(default_factory=list)
     state_file: str = "state/seen.json"
     workers: int = 8
     alert_after_failures: int = 3  # for a board that's gone (404, 410, 422)
@@ -66,12 +88,20 @@ def load_config(path: str = "config.toml", companies_path: str | None = None) ->
     s = cfg.get("settings", {})
     f = cfg.get("filters", {})
     state_file = s.get("state_file", "state/seen.json")
+    filters = Filters(include=f.get("include", []), exclude=f.get("exclude", []), protect=f.get("protect", []),
+                   us_only=f.get("us_only", True), extra_locations=f.get("extra_locations", []),
+                   allow_unknown_location=f.get("allow_unknown_location", True),
+                   max_age_hours=f.get("max_age_hours", 0))
+    profiles = []
+    for p in cfg.get("profile", []):
+        if not p.get("include_extra") or not p.get("to_env"):
+            raise ValueError(f"profile {p.get('name')!r} needs `to_env` and `include_extra`")
+        profiles.append(Profile(p["name"], p["to_env"], filters, dataclasses.replace(
+            filters, include=p["include_extra"], exclude=[*filters.exclude, *p.get("exclude_extra", [])])))
     return Config(
-        filters=Filters(include=f.get("include", []), exclude=f.get("exclude", []), protect=f.get("protect", []),
-                        us_only=f.get("us_only", True), extra_locations=f.get("extra_locations", []),
-                        allow_unknown_location=f.get("allow_unknown_location", True),
-                        max_age_hours=f.get("max_age_hours", 0)),
+        filters=filters,
         companies=companies,
+        profiles=profiles,
         state_file=os.path.normpath(os.path.join(base, state_file)),
         workers=s.get("workers", 8),
         alert_after_failures=s.get("alert_after_failures", 3),
@@ -117,6 +147,7 @@ class RunReport:
     baselined: dict[str, int]
     fetched: list[Fetched]
     alert_problems: bool  # True when a board has just crossed the failure threshold
+    profile_new: dict[str, list[Job]] = field(default_factory=dict)  # profile name -> its new postings
 
 
 def run(cfg: Config, state: State, log=print) -> RunReport:
@@ -124,6 +155,7 @@ def run(cfg: Config, state: State, log=print) -> RunReport:
     fetched = fetch_all(cfg.companies, cfg.workers)
     when = now()
     new, baselined, problems, alert_problems = [], {}, [], False
+    unseen_jobs: list[Job] = []  # new to the poller, before any filter: what profiles pick from
     failing: dict[tuple[str, str], list[tuple[Fetched, int]]] = defaultdict(list)
 
     for f in fetched:
@@ -148,6 +180,7 @@ def run(cfg: Config, state: State, log=print) -> RunReport:
                 # count it if it was posted after this board was first polled.
                 since = state.boards[key]["first_run"][:10]
                 unseen = {j.id for j in f.jobs if j.id in unseen and j.posted and j.posted >= since}
+            unseen_jobs += [j for j in f.jobs if j.id in unseen]
             new += [j for j in f.jobs
                     if j.id in unseen and cfg.filters.match(j) and cfg.filters.fresh(j, run_started)]
             prev = state.boards[key].get("count") or 0
@@ -157,7 +190,9 @@ def run(cfg: Config, state: State, log=print) -> RunReport:
 
     problems = _failure_lines(failing) + problems
     state.prune(when, keep_boards={c.key for c in cfg.companies})
-    return RunReport(new, problems, baselined, fetched, alert_problems)
+    profile_new = {p.name: [j for j in unseen_jobs if p.match(j) and p.fresh(j, run_started)]
+                   for p in cfg.profiles}
+    return RunReport(new, problems, baselined, fetched, alert_problems, profile_new)
 
 
 GROUP_AT = 3  # this many boards on one ATS failing the same way is the ATS, not the boards
@@ -191,6 +226,8 @@ def summarize(report: RunReport, log=print) -> None:
         log(f"first run for {len(report.baselined)} board(s), recorded without alerting: "
             + ", ".join(f"{k} ({v})" for k, v in sorted(report.baselined.items())))
     log(f"{len(report.new)} new matching posting(s)")
+    for name, jobs in report.profile_new.items():
+        log(f"{len(jobs)} new for the {name} profile")
 
 
 def print_jobs(jobs: list[Job], out=sys.stdout) -> None:

@@ -234,3 +234,37 @@ def test_facets_reach_the_workday_fetcher_and_only_workday_takes_them(tmp_path, 
     (tmp_path / "companies.toml").write_text('[[company]]\nname="A"\nats="lever"\nslug="a"\nfacets={x=["1"]}\n')
     with pytest.raises(ValueError, match="only supported for workday"):
         load_config(str(tmp_path / "config.toml"))
+
+
+def test_profile_gets_base_matches_plus_its_extras_and_its_excludes_only_hit_extras(setup):
+    import dataclasses
+    from jobpoller.poller import Profile
+    boards, cfg = setup
+    cfg.filters = Filters(include=["ml engineer"], exclude=["senior"])
+    cfg.profiles = [Profile("robotics", "MAIL_TO_ROBOTICS", cfg.filters,
+                            dataclasses.replace(cfg.filters, include=["robotics"], exclude=["senior", "operator"]))]
+    boards.jobs["acme"] = [j(1)]
+    cycle(cfg)
+    boards.jobs["acme"] = [j(1), j(2), j(3, "Robotics Engineer"), j(4, "Robotics Operator"),
+                           j(5, "Senior Robotics Engineer"), j(6, "ML Engineer, Operator Tools")]
+    r = cycle(cfg)
+    assert sorted(x.id for x in r.new) == ["2", "6"]
+    # 6 is a base match, so the profile's "operator" exclude doesn't touch it; 4 came in only via "robotics"
+    assert sorted(x.id for x in r.profile_new["robotics"]) == ["2", "3", "6"]
+
+
+def test_profiles_load_from_config(tmp_path):
+    (tmp_path / "config.toml").write_text(textwrap.dedent("""
+        [filters]
+        include = ["ml engineer"]
+        exclude = ["senior"]
+        [[profile]]
+        name = "robotics"
+        to_env = "MAIL_TO_ROBOTICS"
+        include_extra = ["robotics"]
+        exclude_extra = ["operator"]
+    """))
+    (tmp_path / "companies.toml").write_text('[[company]]\nname="A"\nats="lever"\nslug="a"\n')
+    [p] = load_config(str(tmp_path / "config.toml")).profiles
+    assert (p.name, p.to_env, p.extra.include, p.extra.exclude) == ("robotics", "MAIL_TO_ROBOTICS", ["robotics"], ["senior", "operator"])
+    assert p.match(j(1, "Robotics Engineer")) and p.match(j(2)) and not p.match(j(3, "Robotics Operator"))
